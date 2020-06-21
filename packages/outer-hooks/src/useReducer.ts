@@ -1,14 +1,7 @@
-import { ActiveHook, outerHookState } from './OuterHookState'
+import { ReducerState, useInternalStatefulHook } from './internal/useInternalStatefulHook'
 
 export type Dispatch<A> = (value: A) => void
 export type ReducerFn<State, Action> = (state: State, action: Action) => State
-
-interface HookState {
-  value: any
-  dispatch: Dispatch<any>
-}
-
-export const HookStates = new WeakMap<ActiveHook, HookState[]>()
 
 export function useReducer<State, Action>(
   reducer: ReducerFn<State, Action>,
@@ -26,19 +19,17 @@ export function useReducer<State, Action, InitialArg>(
   initialStateOrInitialArg: State | InitialArg,
   maybeInitStateFn?: (initialArg: InitialArg) => State
 ): [State, Dispatch<Action>] {
-  if (!outerHookState.currentHook) {
-    throw new Error('please wrap your outer hook in a HookRoot')
-  }
-  const { currentHook, currentIndex } = outerHookState
-  const hookStates = HookStates.get(outerHookState.currentHook) || []
-  let hookState = hookStates[currentIndex]
-
-  if (!hookState) {
+  const hookState = useInternalStatefulHook('reducer', (currentHook) => {
     let initialState: State = maybeInitStateFn
       ? maybeInitStateFn(initialStateOrInitialArg as InitialArg)
       : (initialStateOrInitialArg as State)
 
-    const dispatch: Dispatch<Action> = (action) => {
+    const hookState: ReducerState = {
+      value: initialState,
+      dispatch,
+    }
+
+    function dispatch(action: Action) {
       const newValue = reducer(hookState.value, action)
       if (!Object.is(hookState.value, newValue)) {
         hookState.value = newValue
@@ -46,17 +37,8 @@ export function useReducer<State, Action, InitialArg>(
       }
     }
 
-    hookState = hookStates[currentIndex] = {
-      value: initialState,
-      dispatch,
-    }
+    return hookState
+  })
 
-    HookStates.set(outerHookState.currentHook, hookStates)
-  }
-
-  try {
-    return [hookState.value, hookState.dispatch]
-  } finally {
-    outerHookState.currentIndex++
-  }
+  return [hookState.value, hookState.dispatch]
 }
