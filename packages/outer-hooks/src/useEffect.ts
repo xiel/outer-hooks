@@ -1,7 +1,7 @@
-import { useInternalStatefulHook } from './Internal/useInternalStatefulHook'
+import { areDepsEqual, depsRequireUpdate } from './Internal/areDepsEqual'
 import { ActiveHook } from './Internal/OuterHookState'
 import { Dependencies } from './Internal/sharedTypes'
-import { areDepsEqual, depsRequireUpdate } from './Internal/areDepsEqual'
+import { useInternalStatefulHook } from './Internal/useInternalStatefulHook'
 
 export interface EffectState extends Pick<ActiveHook, 'afterRenderEffects' | 'afterDestroyEffects'> {
   lastDeps?: any[]
@@ -33,6 +33,8 @@ function useInternalEffect(effect: () => void | (() => void), deps: Dependencies
 
   if (depsRequireUpdate(deps, hookState.lastDeps)) {
     const renderEffect = () => {
+      hookState.lastDeps = deps
+
       if (isLayout) {
         runEffectAndAddCleanup()
       } else {
@@ -42,7 +44,6 @@ function useInternalEffect(effect: () => void | (() => void), deps: Dependencies
       function runEffectAndAddCleanup() {
         hookState.cleanupFn && hookState.cleanupFn()
         const cleanupFnReturned = effect()
-        hookState.lastDeps = deps
         hookState.cleanupFn = cleanup
         hookState.afterDestroyEffects.add(cleanup)
 

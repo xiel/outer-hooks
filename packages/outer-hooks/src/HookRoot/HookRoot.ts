@@ -1,5 +1,5 @@
-import { Root, State } from './HookRootTypes'
 import { ActiveHook, outerHookState } from '../Internal/OuterHookState'
+import { Root, State } from './HookRootTypes'
 
 export function HookRoot<Props, HookValue>(
   fn: (props: Props) => HookValue,
@@ -67,8 +67,9 @@ export function HookRoot<Props, HookValue>(
         stateRef.isSuspended = true
         e.then(() => {
           if (renderId === thisRenderID) {
-            render(nextProps)
+            return render(nextProps)
           }
+          return null
         })
       } else {
         destroy()
@@ -87,11 +88,13 @@ export function HookRoot<Props, HookValue>(
   }
 
   function destroy() {
+    if (isDestroyed) {
+      console.error('already destroyed')
+      return
+    }
     isDestroyed = true
-    Promise.resolve().then(() => {
-      hook.afterDestroyEffects.forEach((e) => e())
-      hook.afterDestroyEffects.clear()
 
+    Promise.resolve().then(() => {
       requestAnimationFrame(() => {
         hook.afterDestroyEffects.forEach((e) => e())
         hook.afterDestroyEffects.clear()
