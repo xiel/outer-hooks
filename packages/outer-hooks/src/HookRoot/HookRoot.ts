@@ -7,9 +7,9 @@ export function HookRoot<Props, HookValue>(
   onUpdate?: (nextValue: HookValue) => void
 ): Root<Props, HookValue> {
   let renderId = -1
-  let latestRenderProps: Props
   let needsRender = false
   let isDestroyed = false
+  let latestRenderProps: Props = props
 
   const stateRef: State<HookValue> = {
     value: (undefined as unknown) as HookValue,
@@ -22,6 +22,7 @@ export function HookRoot<Props, HookValue>(
   const root: Root<Props, HookValue> = Object.freeze({
     state: stateRef,
     update,
+    updatePartial,
     destroy,
   })
 
@@ -89,6 +90,10 @@ export function HookRoot<Props, HookValue>(
     latestRenderProps = nextProps
     hook.requestRender()
     return root
+  }
+
+  function updatePartial(nextProps: Partial<Props>): Root<Props, HookValue> {
+    return update({ ...latestRenderProps, ...nextProps })
   }
 
   function destroy() {
