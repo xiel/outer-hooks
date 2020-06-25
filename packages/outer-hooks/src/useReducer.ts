@@ -28,20 +28,20 @@ export function useReducer<State, Action, InitialArg>(
       ? maybeInitStateFn(initialStateOrInitialArg as InitialArg)
       : (initialStateOrInitialArg as State)
 
-    const hookState: ReducerState = {
+    const reducerState: ReducerState = {
       value: initialState,
       dispatch,
     }
 
     function dispatch(action: Action) {
-      const newValue = reducer(hookState.value, action)
-      if (!Object.is(hookState.value, newValue)) {
-        hookState.value = newValue
+      const newValue = reducer(reducerState.value, action)
+      if (!Object.is(reducerState.value, newValue)) {
+        reducerState.value = newValue
         currentHook.requestRender()
       }
     }
 
-    return hookState
+    return reducerState
   })
 
   return [hookState.value, hookState.dispatch]

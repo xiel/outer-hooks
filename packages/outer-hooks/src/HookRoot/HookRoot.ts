@@ -28,10 +28,12 @@ export function HookRoot<Props, HookValue>(
   const hook: ActiveHook = {
     displayName: fn.name || '',
     requestRender() {
-      if (needsRender) return
+      if (needsRender) {
+        return
+      }
       needsRender = true
       // batch all updates in current tick
-      Promise.resolve(undefined).then(render)
+      setTimeout(() => Promise.resolve(undefined).then(render), 1)
     },
     afterRenderEffects: new Set(),
     afterDestroyEffects: new Set(),
@@ -84,7 +86,9 @@ export function HookRoot<Props, HookValue>(
   }
 
   function update(nextProps: Props): Root<Props, HookValue> {
-    return render(nextProps)
+    latestRenderProps = nextProps
+    hook.requestRender()
+    return root
   }
 
   function destroy() {
