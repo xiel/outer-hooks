@@ -2,6 +2,7 @@ import { useInternalStatefulHook } from './Internal/useInternalStatefulHook'
 
 export type Dispatch<A> = (value: A) => void
 export type ReducerFn<State, Action> = (state: State, action: Action) => State
+
 export interface ReducerState {
   value: any
   dispatch: Dispatch<any>

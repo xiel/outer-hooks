@@ -10,7 +10,9 @@ export type UpdateFn<Props, HookValue> = (
 
 export interface Root<Props, HookValue> {
   state: State<HookValue>
+  // TODO: rename to (re-)render (full props)
   update: UpdateFn<Props, HookValue>
+  // TODO: rename to update (partial props)
   updatePartial: (partialNextProps: Partial<Props>) => Root<Props, HookValue>
   destroy(): void
 }

@@ -33,6 +33,7 @@ export function HookRoot<Props, HookValue>(
         return
       }
       needsRender = true
+
       // batch all updates in current tick
       setTimeout(() => Promise.resolve(undefined).then(render), 1)
     },
@@ -40,9 +41,7 @@ export function HookRoot<Props, HookValue>(
     afterDestroyEffects: new Set(),
   }
 
-  update(props)
-
-  return root
+  return update(props)
 
   function render(nextProps?: Props): Root<Props, HookValue> {
     if (isDestroyed) {
