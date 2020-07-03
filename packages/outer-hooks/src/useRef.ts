@@ -1,3 +1,4 @@
+import { ActiveHook } from './internal/OuterHookState'
 import { useInternalStatefulHook } from './Internal/useInternalStatefulHook'
 
 export interface MutableRefObject<T> {
@@ -11,11 +12,16 @@ export interface RefState<T> {
 export function useRef<T>(initialValue: T): MutableRefObject<T>
 export function useRef<T = undefined>(): MutableRefObject<T | undefined>
 export function useRef<T>(initialValue?: T): MutableRefObject<T> {
-  return useInternalStatefulHook('ref', () => {
-    return {
-      ref: {
-        current: initialValue,
-      },
-    }
-  }).ref as MutableRefObject<T>
+  return useInternalStatefulHook('ref', initRefState(initialValue))
+    .ref as MutableRefObject<T>
+}
+
+const initRefState = <T>(initialValue?: T) => (
+  activeHook: ActiveHook
+): RefState<T | undefined> => {
+  return Object.freeze({
+    ref: {
+      current: initialValue,
+    },
+  })
 }

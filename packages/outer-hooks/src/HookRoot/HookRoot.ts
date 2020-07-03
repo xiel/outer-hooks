@@ -88,6 +88,7 @@ export function HookRoot<Props, HookValue>(
   function update(nextProps: Props): Root<Props, HookValue> {
     latestRenderProps = nextProps
     hook.requestRender()
+    // TODO: return as a promise? (resolve when rendered)
     return root
   }
 
