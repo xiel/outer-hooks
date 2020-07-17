@@ -1,4 +1,4 @@
-import { areDepsEqual, depsRequireUpdate } from './Internal/areDepsEqual'
+import { depsRequireUpdate } from './Internal/areDepsEqual'
 import { ActiveHook } from './Internal/OuterHookState'
 import { Dependencies } from './Internal/sharedTypes'
 import { useInternalStatefulHook } from './Internal/useInternalStatefulHook'

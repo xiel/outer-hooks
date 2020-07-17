@@ -4,6 +4,7 @@ export function areDepsEqual(deps: Dependencies, prevDeps: Dependencies) {
   return (
     Array.isArray(deps) &&
     Array.isArray(prevDeps) &&
+    // TODO: error here
     deps.length === deps.length &&
     deps.every((value, i) => Object.is(value, prevDeps![i]))
   )
