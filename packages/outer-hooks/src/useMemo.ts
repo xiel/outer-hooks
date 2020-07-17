@@ -1,6 +1,6 @@
-import { useInternalStatefulHook } from './Internal/useInternalStatefulHook'
-import { Dependencies } from './Internal/sharedTypes'
 import { depsRequireUpdate } from './Internal/areDepsEqual'
+import { Dependencies } from './Internal/sharedTypes'
+import { useInternalStatefulHook } from './Internal/useInternalStatefulHook'
 
 export interface MemoState {
   value?: any
@@ -14,7 +14,10 @@ function initMemoState(): MemoState {
   }
 }
 
-export function useMemo<T>(factory: () => T, deps: Dependencies | undefined): T {
+export function useMemo<T>(
+  factory: () => T,
+  deps: Dependencies | undefined
+): T {
   const hookState = useInternalStatefulHook('memo', initMemoState)
   let value: T
 
