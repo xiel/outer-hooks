@@ -9,6 +9,9 @@ export function areDepsEqual(deps: Dependencies, prevDeps: Dependencies) {
   )
 }
 
-export function depsRequireUpdate(deps: Dependencies | undefined, prevDeps: Dependencies | undefined) {
+export function depsRequireUpdate(
+  deps: Dependencies | undefined,
+  prevDeps: Dependencies | undefined
+) {
   return !deps || !prevDeps || !areDepsEqual(deps, prevDeps)
 }

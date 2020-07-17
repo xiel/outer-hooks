@@ -1,8 +1,8 @@
-import { ActiveHook, outerHookState } from './OuterHookState'
 import { EffectState } from '../useEffect'
 import { MemoState } from '../useMemo'
 import { ReducerState } from '../useReducer'
 import { RefState } from '../useRef'
+import { ActiveHook, outerHookState } from './OuterHookState'
 
 export interface HookState {
   reducer?: ReducerState
@@ -12,7 +12,9 @@ export interface HookState {
 }
 
 export const HookStates = new WeakMap<ActiveHook, HookState[]>()
-export type InitHookStateFn<Type extends keyof HookState> = (currentHook: ActiveHook) => HookState[Type]
+export type InitHookStateFn<Type extends keyof HookState> = (
+  currentHook: ActiveHook
+) => HookState[Type]
 
 console.log('HookStates', HookStates)
 
@@ -26,7 +28,10 @@ export function useInternalStatefulHook<Type extends keyof HookState>(
   const { currentHook, currentIndex } = outerHookState
   const currentHookStates = HookStates.get(outerHookState.currentHook) || []
 
-  if (currentHookStates[currentIndex] === undefined || !(type in currentHookStates[currentIndex])) {
+  if (
+    currentHookStates[currentIndex] === undefined ||
+    !(type in currentHookStates[currentIndex])
+  ) {
     currentHookStates[currentIndex] = currentHookStates[currentIndex] || {}
     currentHookStates[currentIndex][type] = initFn(currentHook)
     HookStates.set(outerHookState.currentHook, currentHookStates)
