@@ -28,22 +28,12 @@
     "eslint-plugin-react": "^7.14.3",
     "eslint-plugin-react-app": "^6.2.2",
     "eslint-plugin-simple-import-sort": "^5.0.0",
-    "husky": "^4.2.5",
-    "lint-staged": "^10.2.10",
     "tsdx": "^0.13.2",
     "tslib": "^2.0.0",
     "typescript": "^3.8"
   },
   "engines": {
     "node": ">=10"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
-  "lint-staged": {
-    "*.{ts,tsx,js}": "tsdx lint --fix"
   },
   "repository": {
     "type": "git",
