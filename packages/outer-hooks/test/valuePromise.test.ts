@@ -43,5 +43,8 @@ describe('HookRoot | async value', () => {
     expect(await hookRoot.state.value).toEqual({ a: 2, b: 3 })
     expect(useJestHook).toHaveBeenCalledTimes(2)
     expect(useJestHook).toHaveBeenLastCalledWith({ a: 2, b: 3 })
+
+    expect(await hookRoot.update({ a: 0 }).state.value).toEqual({ a: 0, b: 3 })
+    expect(useJestHook).toHaveBeenCalledTimes(3)
   })
 })
