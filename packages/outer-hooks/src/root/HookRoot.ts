@@ -1,7 +1,7 @@
 import { ActiveHook, outerHookState } from '../core/OuterHookState'
 import { Root, State } from './HookRootTypes'
 
-export function HookRoot<Props, HookValue>(
+export function HookRoot<Props extends object, HookValue>(
   fn: (props: Props) => HookValue,
   props: Props,
   onUpdate?: (nextValue: HookValue) => void
