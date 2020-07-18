@@ -7,7 +7,7 @@ const useNameHook = ({ name }: { name: string }) => {
 }
 
 describe('HookRoot Interface', () => {
-  describe('basic interface with named hook', () => {
+  it('basic interface with named hook', () => {
     const useNamedHook = () => 'hook value'
     const hookRoot = act(() => HookRoot(useNamedHook))
 
@@ -20,27 +20,28 @@ describe('HookRoot Interface', () => {
           "isDestroyed": false,
           "isSuspended": false,
           "value": "hook value",
+          "valuePromise": [Function],
         },
         "update": [Function],
       }
     `)
   })
 
-  describe('display name for anonymous hook', () => {
+  it('display name for anonymous hook', () => {
     const hookRoot = HookRoot(() => {}, {})
     expect(hookRoot.displayName).toBe('HookRoot(useAnonymousHook)')
   })
 
-  describe('initially undefined value (without act render)', () => {
+  it('initially undefined value (without act render)', () => {
     const hookRoot = HookRoot(useNameHook, { name: 'Peter' })
     expect(hookRoot.state.value).toBe(undefined)
   })
 
-  describe('can create a hook without props', () => {
+  it('can create a hook without props', () => {
     expect(act(() => HookRoot(() => 42)).state.value).toEqual(42)
   })
 
-  describe('can create a hook with optional props', () => {
+  it('can create a hook with optional props', () => {
     const defaultValue = { name: 'No Name' }
     const useOptionalNameHook = ({ name }: { name: string } = defaultValue) => {
       return name
@@ -52,7 +53,7 @@ describe('HookRoot Interface', () => {
     ).toBe('Max')
   })
 
-  describe('can create a hook inline with props', () => {
+  it('can create a hook inline with props', () => {
     const hookRoot = act(() => HookRoot(({ n }: { n: number }) => n, { n: 42 }))
     expect(hookRoot.state.value).toEqual(42)
   })

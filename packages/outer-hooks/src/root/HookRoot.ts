@@ -1,4 +1,5 @@
 import { ActiveHook, outerHookState } from '../core/OuterHookState'
+import { createPromisedValue, PromisedValue } from '../core/promisedValue'
 import { Root, State } from './HookRootTypes'
 
 type OnUpdateFn<HookValue> = (nextValue: HookValue) => void
@@ -33,11 +34,23 @@ export function HookRoot<Props extends object | undefined, HookValue>(
   let isDestroyed = false
   let latestRenderProps: Props
 
+  let valueFresh = false
+  let promisedValue: PromisedValue<HookValue> | undefined
+
   const stateRef: State<HookValue> = {
-    value: (undefined as unknown) as HookValue,
     isSuspended: false,
     get isDestroyed() {
       return isDestroyed
+    },
+    value: (undefined as unknown) as HookValue,
+    valuePromise: () => {
+      if (valueFresh) {
+        return Promise.resolve(stateRef.value)
+      }
+      if (!promisedValue) {
+        promisedValue = createPromisedValue<HookValue>()
+      }
+      return promisedValue.promise
     },
   }
 
@@ -58,6 +71,8 @@ export function HookRoot<Props extends object | undefined, HookValue>(
         return
       }
       needsRender = true
+      promisedValue = undefined
+      valueFresh = false
 
       if (outerHookState.flushRender) {
         outerHookState.rendersToFlush.add(performRender)
@@ -76,7 +91,6 @@ export function HookRoot<Props extends object | undefined, HookValue>(
    * @param nextProps
    */
   function render(nextProps: Props): Root<Props, HookValue> {
-    // TODO: return as a promise? (resolve when rendered)
     latestRenderProps = nextProps
     hook.requestRender()
     return root
@@ -123,9 +137,16 @@ export function HookRoot<Props extends object | undefined, HookValue>(
       stateRef.isSuspended = false
       needsRender = false
       latestRenderProps = renderProps
+
       hook.afterRenderEffects.forEach((e) => e())
       hook.afterRenderEffects.clear()
+
       onUpdate && onUpdate(stateRef.value)
+
+      valueFresh = true
+      if (promisedValue) {
+        promisedValue.resolve(stateRef.value)
+      }
     } catch (e) {
       if (e instanceof Promise || typeof e.then === 'function') {
         stateRef.isSuspended = true
@@ -137,6 +158,11 @@ export function HookRoot<Props extends object | undefined, HookValue>(
         })
       } else {
         destroy()
+
+        if (promisedValue) {
+          promisedValue.reject(e)
+        }
+
         throw e
       }
     }
