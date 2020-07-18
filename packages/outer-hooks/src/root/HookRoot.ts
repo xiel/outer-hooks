@@ -86,7 +86,7 @@ export function HookRoot<Props extends object | undefined, HookValue>(
    * re-renders the hook in the next tick, with the new set of props merged with the previous props
    * @param nextProps
    */
-  function update(nextProps: Partial<Props>): Root<Props, HookValue> {
+  function update(nextProps?: Partial<Props>): Root<Props, HookValue> {
     return render({ ...latestRenderProps, ...nextProps })
   }
 

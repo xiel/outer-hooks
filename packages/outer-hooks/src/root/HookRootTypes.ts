@@ -9,7 +9,7 @@ export type RenderFn<Props, HookValue> = (
 ) => Root<Props, HookValue>
 
 export type UpdateFn<Props, HookValue> = (
-  partialNextProps: Partial<Props>
+  partialNextProps?: Partial<Props>
 ) => Root<Props, HookValue>
 
 export interface Root<Props, HookValue> {

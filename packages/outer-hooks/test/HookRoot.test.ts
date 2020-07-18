@@ -1,10 +1,7 @@
 import { act, HookRoot } from '../src'
 import { nextRenderWithFakeTimers } from './testHelpers'
 
-const usePropReturningHook = <P>(props: P) => {
-  return props
-}
-
+const usePropReturningHook = <P>(props: P) => props
 const useNameHook = ({ name }: { name: string }) => {
   return name
 }
