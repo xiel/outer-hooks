@@ -1,4 +1,5 @@
 import { act, HookRoot } from '../src'
+import { nextRenderWithFakeTimers } from './testHelpers'
 
 const usePropReturningHook = <P>(props: P) => {
   return props
@@ -8,7 +9,7 @@ const useNameHook = ({ name }: { name: string }) => {
   return name
 }
 
-describe('HookRoot', () => {
+describe('HookRoot Interface', () => {
   describe('basic interface with named hook', () => {
     const useNamedHook = () => 'hook value'
     const hookRoot = act(() => HookRoot(useNamedHook))
@@ -64,7 +65,7 @@ describe('HookRoot', () => {
 
     const hookRoot = act(() => HookRoot(usePropReturningHook, initialProps))
 
-    it('should update value synchronous with act', function() {
+    it('should update value synchronous with act', () => {
       expect(hookRoot.state.value).toEqual(initialProps)
 
       act(() => hookRoot.updatePartial({ letter: 'b' }))
@@ -74,9 +75,27 @@ describe('HookRoot', () => {
       expect(hookRoot.state.value).toEqual({ letter: 'c' })
     })
 
-    it('should not update synchronous without act', function() {
+    it('should not update synchronous without act', () => {
       hookRoot.updatePartial({ letter: 'this will not be applied sync' })
       expect(hookRoot.state.value).toEqual({ letter: 'c' })
+    })
+  })
+
+  describe('updated values after tick, without act, using fake timers', () => {
+    it('should update value after advancing timers', async () => {
+      jest.useFakeTimers()
+
+      const hookRoot = HookRoot((p) => p, { test: 'fake timers' })
+      expect(hookRoot.state.value).toEqual(undefined)
+
+      await nextRenderWithFakeTimers()
+      expect(hookRoot.state.value).toEqual({ test: 'fake timers' })
+
+      hookRoot.updatePartial({ test: 'second render' })
+      await nextRenderWithFakeTimers()
+      expect(hookRoot.state.value).toEqual({ test: 'second render' })
+
+      jest.useRealTimers()
     })
   })
 })
