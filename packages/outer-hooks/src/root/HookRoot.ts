@@ -19,7 +19,9 @@ export function HookRoot<Props, HookValue>(
     },
   }
 
+  const hookName = fn.name || 'useAnonymousHook'
   const root: Root<Props, HookValue> = Object.freeze({
+    displayName: `HookRoot(${hookName})`,
     state: stateRef,
     update,
     updatePartial,
@@ -27,15 +29,19 @@ export function HookRoot<Props, HookValue>(
   })
 
   const hook: ActiveHook = {
-    displayName: fn.name || '',
+    displayName: hookName,
+    // batches all updates in current tick or flush
     requestRender() {
       if (needsRender) {
         return
       }
       needsRender = true
 
-      // batch all updates in current tick
-      setTimeout(() => Promise.resolve(undefined).then(render), 1)
+      if (outerHookState.flushRender) {
+        outerHookState.rendersToFlush.add(render)
+      } else {
+        setTimeout(() => Promise.resolve(undefined).then(render), 1)
+      }
     },
     afterRenderEffects: new Set(),
     afterDestroyEffects: new Set(),

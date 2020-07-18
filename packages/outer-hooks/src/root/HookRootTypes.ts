@@ -9,6 +9,7 @@ export type UpdateFn<Props, HookValue> = (
 ) => Root<Props, HookValue>
 
 export interface Root<Props, HookValue> {
+  displayName: string
   state: State<HookValue>
   // TODO: rename to (re-)render (full props)
   update: UpdateFn<Props, HookValue>
