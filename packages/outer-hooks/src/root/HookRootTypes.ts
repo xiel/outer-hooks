@@ -1,8 +1,8 @@
 export interface State<HookValue> {
   isSuspended: boolean
   isDestroyed: boolean
-  value: HookValue
-  valuePromise: () => Promise<HookValue>
+  currentValue: HookValue
+  value: Promise<HookValue>
 }
 
 export type RenderFn<Props, HookValue> = (

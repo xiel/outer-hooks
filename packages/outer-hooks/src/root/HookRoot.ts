@@ -42,10 +42,10 @@ export function HookRoot<Props extends object | undefined, HookValue>(
     get isDestroyed() {
       return isDestroyed
     },
-    value: (undefined as unknown) as HookValue,
-    valuePromise: () => {
+    currentValue: (undefined as unknown) as HookValue,
+    get value() {
       if (valueFresh) {
-        return Promise.resolve(stateRef.value)
+        return Promise.resolve(stateRef.currentValue)
       }
       if (!promisedValue) {
         promisedValue = createPromisedValue<HookValue>()
@@ -133,7 +133,7 @@ export function HookRoot<Props extends object | undefined, HookValue>(
     const renderProps = nextProps ?? latestRenderProps
 
     try {
-      stateRef.value = hookFunction(renderProps)
+      stateRef.currentValue = hookFunction(renderProps)
       stateRef.isSuspended = false
       needsRender = false
       latestRenderProps = renderProps
@@ -141,11 +141,11 @@ export function HookRoot<Props extends object | undefined, HookValue>(
       hook.afterRenderEffects.forEach((e) => e())
       hook.afterRenderEffects.clear()
 
-      onUpdate && onUpdate(stateRef.value)
+      onUpdate && onUpdate(stateRef.currentValue)
 
       valueFresh = true
       if (promisedValue) {
-        promisedValue.resolve(stateRef.value)
+        promisedValue.resolve(stateRef.currentValue)
       }
     } catch (e) {
       if (e instanceof Promise || typeof e.then === 'function') {
@@ -155,6 +155,12 @@ export function HookRoot<Props extends object | undefined, HookValue>(
             return performRender(nextProps)
           }
           return null
+        }).catch((error: unknown) => {
+          destroy()
+
+          if (promisedValue) {
+            promisedValue.reject(error)
+          }
         })
       } else {
         destroy()
