@@ -1,7 +1,7 @@
-import { depsRequireUpdate } from './Internal/areDepsEqual'
-import { ActiveHook } from './Internal/OuterHookState'
-import { Dependencies } from './Internal/sharedTypes'
-import { useInternalStatefulHook } from './Internal/useInternalStatefulHook'
+import { depsRequireUpdate } from './core/areDepsEqual'
+import { ActiveHook } from './core/OuterHookState'
+import { Dependencies } from './core/sharedTypes'
+import { useInternalStatefulHook } from './core/useInternalStatefulHook'
 
 export interface EffectState
   extends Pick<ActiveHook, 'afterRenderEffects' | 'afterDestroyEffects'> {

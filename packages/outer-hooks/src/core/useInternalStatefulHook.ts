@@ -16,8 +16,6 @@ export type InitHookStateFn<Type extends keyof HookState> = (
   currentHook: ActiveHook
 ) => HookState[Type]
 
-console.log('HookStates', HookStates)
-
 export function useInternalStatefulHook<Type extends keyof HookState>(
   type: Type,
   initFn: InitHookStateFn<Type>

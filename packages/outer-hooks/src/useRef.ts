@@ -1,5 +1,5 @@
-import { ActiveHook } from './internal/OuterHookState'
-import { useInternalStatefulHook } from './Internal/useInternalStatefulHook'
+import { ActiveHook } from './core/OuterHookState'
+import { useInternalStatefulHook } from './core/useInternalStatefulHook'
 
 export interface MutableRefObject<T> {
   current: T

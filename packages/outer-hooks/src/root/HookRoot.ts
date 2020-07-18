@@ -1,4 +1,4 @@
-import { ActiveHook, outerHookState } from '../Internal/OuterHookState'
+import { ActiveHook, outerHookState } from '../core/OuterHookState'
 import { Root, State } from './HookRootTypes'
 
 export function HookRoot<Props, HookValue>(

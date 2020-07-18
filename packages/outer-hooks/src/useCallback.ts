@@ -1,4 +1,4 @@
-import { Dependencies } from './Internal/sharedTypes'
+import { Dependencies } from './core/sharedTypes'
 import { useMemo } from './useMemo'
 
 export function useCallback<T extends (...args: never[]) => unknown>(

@@ -4,7 +4,6 @@ test('exported interface', () => {
   expect(ExportedInterface).toMatchInlineSnapshot(`
     Object {
       "HookRoot": [Function],
-      "areDepsEqual": [Function],
       "useCallback": [Function],
       "useEffect": [Function],
       "useLayoutEffect": [Function],
