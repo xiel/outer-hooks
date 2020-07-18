@@ -45,8 +45,8 @@ export function HookRoot<Props extends object | undefined, HookValue>(
   const root: Root<Props, HookValue> = Object.freeze({
     displayName: `HookRoot(${hookName})`,
     state: stateRef,
+    render,
     update,
-    updatePartial,
     destroy,
   })
 
@@ -60,18 +60,52 @@ export function HookRoot<Props extends object | undefined, HookValue>(
       needsRender = true
 
       if (outerHookState.flushRender) {
-        outerHookState.rendersToFlush.add(render)
+        outerHookState.rendersToFlush.add(performRender)
       } else {
-        setTimeout(() => Promise.resolve(undefined).then(render), 1)
+        setTimeout(() => Promise.resolve(undefined).then(performRender), 1)
       }
     },
     afterRenderEffects: new Set(),
     afterDestroyEffects: new Set(),
   }
 
-  return update(initialProps!)
+  return render(initialProps!)
 
-  function render(nextProps?: Props): Root<Props, HookValue> {
+  /**
+   * re-renders the hook in the next tick, with the new set of props
+   * @param nextProps
+   */
+  function render(nextProps: Props): Root<Props, HookValue> {
+    // TODO: return as a promise? (resolve when rendered)
+    latestRenderProps = nextProps
+    hook.requestRender()
+    return root
+  }
+
+  /**
+   * re-renders the hook in the next tick, with the new set of props merged with the previous props
+   * @param nextProps
+   */
+  function update(nextProps: Partial<Props>): Root<Props, HookValue> {
+    return render({ ...latestRenderProps, ...nextProps })
+  }
+
+  function destroy() {
+    if (isDestroyed) {
+      console.error('already destroyed')
+      return
+    }
+    isDestroyed = true
+
+    Promise.resolve().then(() => {
+      requestAnimationFrame(() => {
+        hook.afterDestroyEffects.forEach((e) => e())
+        hook.afterDestroyEffects.clear()
+      })
+    })
+  }
+
+  function performRender(nextProps?: Props): Root<Props, HookValue> {
     if (isDestroyed) {
       console.warn('can not re-render a Hook, that was destroyed.')
       return root
@@ -97,7 +131,7 @@ export function HookRoot<Props extends object | undefined, HookValue>(
         stateRef.isSuspended = true
         e.then(() => {
           if (renderId === thisRenderID) {
-            return render(nextProps)
+            return performRender(nextProps)
           }
           return null
         })
@@ -111,31 +145,5 @@ export function HookRoot<Props extends object | undefined, HookValue>(
     outerHookState.currentIndex = prevIndex
 
     return root
-  }
-
-  function update(nextProps: Props): Root<Props, HookValue> {
-    latestRenderProps = nextProps
-    hook.requestRender()
-    // TODO: return as a promise? (resolve when rendered)
-    return root
-  }
-
-  function updatePartial(nextProps: Partial<Props>): Root<Props, HookValue> {
-    return update({ ...latestRenderProps, ...nextProps })
-  }
-
-  function destroy() {
-    if (isDestroyed) {
-      console.error('already destroyed')
-      return
-    }
-    isDestroyed = true
-
-    Promise.resolve().then(() => {
-      requestAnimationFrame(() => {
-        hook.afterDestroyEffects.forEach((e) => e())
-        hook.afterDestroyEffects.clear()
-      })
-    })
   }
 }

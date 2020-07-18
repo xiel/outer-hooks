@@ -18,13 +18,13 @@ describe('HookRoot Interface', () => {
       Object {
         "destroy": [Function],
         "displayName": "HookRoot(useNamedHook)",
+        "render": [Function],
         "state": Object {
           "isDestroyed": false,
           "isSuspended": false,
           "value": "hook value",
         },
         "update": [Function],
-        "updatePartial": [Function],
       }
     `)
   })
@@ -68,15 +68,15 @@ describe('HookRoot Interface', () => {
     it('should update value synchronous with act', () => {
       expect(hookRoot.state.value).toEqual(initialProps)
 
-      act(() => hookRoot.updatePartial({ letter: 'b' }))
+      act(() => hookRoot.update({ letter: 'b' }))
       expect(hookRoot.state.value).toEqual({ letter: 'b' })
 
-      act(() => hookRoot.update({ letter: 'c' }))
+      act(() => hookRoot.render({ letter: 'c' }))
       expect(hookRoot.state.value).toEqual({ letter: 'c' })
     })
 
     it('should not update synchronous without act', () => {
-      hookRoot.updatePartial({ letter: 'this will not be applied sync' })
+      hookRoot.update({ letter: 'this will not be applied sync' })
       expect(hookRoot.state.value).toEqual({ letter: 'c' })
     })
   })
@@ -91,7 +91,7 @@ describe('HookRoot Interface', () => {
       await nextRenderWithFakeTimers()
       expect(hookRoot.state.value).toEqual({ test: 'fake timers' })
 
-      hookRoot.updatePartial({ test: 'second render' })
+      hookRoot.update({ test: 'second render' })
       await nextRenderWithFakeTimers()
       expect(hookRoot.state.value).toEqual({ test: 'second render' })
 
