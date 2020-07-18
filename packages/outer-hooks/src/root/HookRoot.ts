@@ -1,15 +1,37 @@
 import { ActiveHook, outerHookState } from '../core/OuterHookState'
 import { Root, State } from './HookRootTypes'
 
-export function HookRoot<Props extends object | undefined, HookValue>(
-  fn: (props: Props) => HookValue,
-  props: Props,
-  onUpdate?: (nextValue: HookValue) => void
+type OnUpdateFn<HookValue> = (nextValue: HookValue) => void
+
+export function HookRoot<Props extends object, HookValue>(
+  hookFunction: (props: Props) => HookValue,
+  initialProps: Props,
+  onUpdate?: OnUpdateFn<HookValue>
+): Root<Props, HookValue>
+
+export function HookRoot<Props extends undefined, HookValue>(
+  hookFunction: (props?: Props) => HookValue,
+  onUpdate?: OnUpdateFn<HookValue>
+): Root<Props, HookValue>
+
+export function HookRoot<Props extends object, HookValue>(
+  hookFunction: (props: Props) => HookValue,
+  initialPropsOrOnUpdate?: Props | OnUpdateFn<HookValue>,
+  onUpdate?: OnUpdateFn<HookValue>
 ): Root<Props, HookValue> {
+  let initialProps: Props | undefined = undefined
+
+  if (typeof initialPropsOrOnUpdate === 'function') {
+    onUpdate = initialPropsOrOnUpdate as OnUpdateFn<HookValue>
+  } else {
+    initialProps = initialPropsOrOnUpdate as Props
+  }
+
+  // TODO: move props onto state / root
   let renderId = -1
   let needsRender = false
   let isDestroyed = false
-  let latestRenderProps: Props = props
+  let latestRenderProps: Props
 
   const stateRef: State<HookValue> = {
     value: (undefined as unknown) as HookValue,
@@ -19,7 +41,7 @@ export function HookRoot<Props extends object | undefined, HookValue>(
     },
   }
 
-  const hookName = fn.name || 'useAnonymousHook'
+  const hookName = hookFunction.name || 'useAnonymousHook'
   const root: Root<Props, HookValue> = Object.freeze({
     displayName: `HookRoot(${hookName})`,
     state: stateRef,
@@ -47,7 +69,7 @@ export function HookRoot<Props extends object | undefined, HookValue>(
     afterDestroyEffects: new Set(),
   }
 
-  return update(props)
+  return update(initialProps!)
 
   function render(nextProps?: Props): Root<Props, HookValue> {
     if (isDestroyed) {
@@ -63,7 +85,7 @@ export function HookRoot<Props extends object | undefined, HookValue>(
     const renderProps = nextProps ?? latestRenderProps
 
     try {
-      stateRef.value = fn(renderProps)
+      stateRef.value = hookFunction(renderProps)
       stateRef.isSuspended = false
       needsRender = false
       latestRenderProps = renderProps
