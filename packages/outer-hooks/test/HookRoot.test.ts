@@ -42,6 +42,18 @@ describe('HookRoot', () => {
     expect(act(() => HookRoot(() => 42)).state.value).toEqual(42)
   })
 
+  describe('can create a hook with optional props', () => {
+    const defaultValue = { name: 'No Name' }
+    const useOptionalNameHook = ({ name }: { name: string } = defaultValue) => {
+      return name
+    }
+
+    expect(act(() => HookRoot(useOptionalNameHook)).state.value).toBe('No Name')
+    expect(
+      act(() => HookRoot(useOptionalNameHook, { name: 'Max' })).state.value
+    ).toBe('Max')
+  })
+
   describe('can create a hook inline with props', () => {
     const hookRoot = act(() => HookRoot(({ n }: { n: number }) => n, { n: 42 }))
     expect(hookRoot.state.value).toEqual(42)

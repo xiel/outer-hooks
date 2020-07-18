@@ -3,7 +3,7 @@ import { Root, State } from './HookRootTypes'
 
 type OnUpdateFn<HookValue> = (nextValue: HookValue) => void
 
-export function HookRoot<Props extends object, HookValue>(
+export function HookRoot<Props extends object | undefined, HookValue>(
   hookFunction: (props: Props) => HookValue,
   initialProps: Props,
   onUpdate?: OnUpdateFn<HookValue>
@@ -14,7 +14,7 @@ export function HookRoot<Props extends undefined, HookValue>(
   onUpdate?: OnUpdateFn<HookValue>
 ): Root<Props, HookValue>
 
-export function HookRoot<Props extends object, HookValue>(
+export function HookRoot<Props extends object | undefined, HookValue>(
   hookFunction: (props: Props) => HookValue,
   initialPropsOrOnUpdate?: Props | OnUpdateFn<HookValue>,
   onUpdate?: OnUpdateFn<HookValue>
