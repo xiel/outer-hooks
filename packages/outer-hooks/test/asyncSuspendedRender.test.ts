@@ -6,13 +6,11 @@ const getFromCache = (key: string) => {
   if (cache.has(key)) {
     return cache.get(key)
   }
-
   return new Promise<string>((r, reject) =>
     setTimeout(() => {
       if (key === 'Dogs') {
         reject()
       }
-
       const value = `${key} are fun!`
       cache.set(key, value)
       r(value)
@@ -22,11 +20,9 @@ const getFromCache = (key: string) => {
 
 const useAsyncHook = jest.fn(({ animals }: { animals: string }) => {
   const cachedVal = getFromCache(animals)
-
   if (cachedVal && cachedVal instanceof Promise) {
     throw cachedVal
   }
-
   return cachedVal
 })
 

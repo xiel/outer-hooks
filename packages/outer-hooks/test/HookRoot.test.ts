@@ -32,9 +32,10 @@ describe('HookRoot Interface', () => {
     expect(hookRoot.displayName).toBe('HookRoot(useAnonymousHook)')
   })
 
-  it('initially undefined value (without act render)', () => {
+  it('initially undefined currentValue (without act render)', () => {
     const hookRoot = HookRoot(useNameHook, { name: 'Peter' })
     expect(hookRoot.state.currentValue).toBe(undefined)
+    expect(hookRoot.state.value instanceof Promise).toBe(true)
   })
 
   it('can create a hook without props', () => {
