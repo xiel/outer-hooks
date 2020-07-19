@@ -1,4 +1,4 @@
-import { areDepsEqual, depsRequireUpdate } from '../src/core/areDepsEqual'
+import { areDepsEqual, depsRequireUpdate } from '../../src/core/areDepsEqual'
 
 describe('dependecy array', () => {
   test('array identity can be different (empty)', () => {

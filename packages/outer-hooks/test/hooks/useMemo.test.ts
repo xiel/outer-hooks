@@ -1,4 +1,4 @@
-import { HookRoot, useMemo } from '../src'
+import { HookRoot, useMemo } from '../../src'
 
 describe('useMemo', () => {
   it('should be called when deps change', async () => {

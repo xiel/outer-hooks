@@ -1,5 +1,5 @@
-import { act, HookRoot } from '../src'
-import { nextRenderWithFakeTimers } from './testHelpers'
+import { act, HookRoot } from '../../src'
+import { nextRenderWithFakeTimers } from '../utils/testHelpers'
 
 const usePropReturningHook = <P>(props: P) => props
 const useNameHook = ({ name }: { name: string }) => {
@@ -18,6 +18,7 @@ describe('HookRoot Interface', () => {
         "render": [Function],
         "state": Object {
           "currentValue": "hook value",
+          "effects": Promise {},
           "isDestroyed": false,
           "isSuspended": false,
           "value": Promise {},

@@ -3,6 +3,10 @@ import { ActiveHook } from './core/OuterHookState'
 import { Dependencies } from './core/sharedTypes'
 import { useInternalStatefulHook } from './core/useInternalStatefulHook'
 
+const isEffectEnv = Boolean(
+  global?.window?.document?.documentElement && requestAnimationFrame
+)
+
 export interface EffectState
   extends Pick<ActiveHook, 'afterRenderEffects' | 'afterDestroyEffects'> {
   lastDeps?: any[]
@@ -48,7 +52,7 @@ function useInternalEffect(
     }
   })!
 
-  if (depsRequireUpdate(deps, hookState.lastDeps)) {
+  if (isEffectEnv && depsRequireUpdate(deps, hookState.lastDeps)) {
     const renderEffect = () => {
       hookState.lastDeps = deps
 

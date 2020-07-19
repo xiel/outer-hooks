@@ -1,8 +1,9 @@
 export interface State<HookValue> {
   isSuspended: boolean
   isDestroyed: boolean
-  currentValue: HookValue
+  currentValue?: HookValue
   value: Promise<HookValue>
+  effects: Promise<void>
 }
 
 export type RenderFn<Props, HookValue> = (
@@ -18,5 +19,5 @@ export interface Root<Props, HookValue> {
   state: State<HookValue>
   render: RenderFn<Props, HookValue>
   update: UpdateFn<Props, HookValue>
-  destroy(): void
+  destroy(): Promise<void>
 }

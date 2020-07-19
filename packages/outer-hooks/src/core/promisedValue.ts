@@ -4,6 +4,7 @@ export interface PromisedValue<Value> {
   promise: Promise<Value>
   isResolved: boolean
   isRejected: boolean
+  isFulfilled: boolean
 }
 
 const placeholder: any = undefined
@@ -15,16 +16,19 @@ export function createPromisedValue<Value>(): PromisedValue<Value> {
     promise: placeholder,
     isResolved: false,
     isRejected: false,
+    isFulfilled: false,
   }
 
   promisedValue.promise = new Promise<Value>((resolve, reject) => {
     promisedValue.resolve = (value) => {
       resolve(value)
       promisedValue.isResolved = true
+      promisedValue.isFulfilled = true
     }
     promisedValue.reject = (reason) => {
       reject(reason)
       promisedValue.isRejected = true
+      promisedValue.isFulfilled = true
     }
   })
 

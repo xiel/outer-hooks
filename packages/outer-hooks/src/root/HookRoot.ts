@@ -2,6 +2,8 @@ import { ActiveHook, outerHookState } from '../core/OuterHookState'
 import { createPromisedValue, PromisedValue } from '../core/promisedValue'
 import { Root, State } from './HookRootTypes'
 
+const __DEV__ = process.env.NODE_ENV !== 'production'
+
 type OnUpdateFn<HookValue> = (nextValue: HookValue) => void
 
 export function HookRoot<Props extends object | undefined, HookValue>(
@@ -31,26 +33,36 @@ export function HookRoot<Props extends object | undefined, HookValue>(
   // TODO: move props onto state / root
   let renderId = -1
   let needsRender = false
-  let isDestroyed = false
   let latestRenderProps: Props
 
   let valueFresh = false
   let promisedValue: PromisedValue<HookValue> | undefined
+  let destroyPromise: Promise<void> | undefined
 
   const stateRef: State<HookValue> = {
     isSuspended: false,
     get isDestroyed() {
-      return isDestroyed
+      return Boolean(destroyPromise)
     },
-    currentValue: (undefined as unknown) as HookValue,
+    currentValue: undefined,
     get value() {
       if (valueFresh) {
-        return Promise.resolve(stateRef.currentValue)
+        return Promise.resolve(stateRef.currentValue!)
       }
       if (!promisedValue) {
+        if (stateRef.isDestroyed) {
+          return Promise.reject('already destroyed')
+        }
         promisedValue = createPromisedValue<HookValue>()
       }
       return promisedValue.promise
+    },
+    get effects() {
+      return new Promise<void>((resolve) => {
+        stateRef.value.then(() => {
+          requestAnimationFrame(() => resolve())
+        })
+      })
     },
   }
 
@@ -104,24 +116,33 @@ export function HookRoot<Props extends object | undefined, HookValue>(
     return render({ ...latestRenderProps, ...nextProps })
   }
 
-  function destroy() {
-    if (isDestroyed) {
-      console.error('already destroyed')
-      return
+  function destroy(reason?: unknown) {
+    if (destroyPromise) {
+      __DEV__ && console.error('already destroyed')
+      return destroyPromise
     }
-    isDestroyed = true
+    if (promisedValue && !promisedValue.isFulfilled) {
+      promisedValue.reject(reason)
+    }
 
-    Promise.resolve().then(() => {
+    stateRef.currentValue = undefined
+    valueFresh = false
+    promisedValue = undefined
+
+    destroyPromise = new Promise<void>((resolve) => {
       requestAnimationFrame(() => {
         hook.afterDestroyEffects.forEach((e) => e())
         hook.afterDestroyEffects.clear()
+        resolve()
       })
     })
+
+    return destroyPromise
   }
 
   function performRender(nextProps?: Props): Root<Props, HookValue> {
-    if (isDestroyed) {
-      console.warn('can not re-render a Hook, that was destroyed.')
+    if (stateRef.isDestroyed) {
+      __DEV__ && console.warn('can not re-render a Hook, that was destroyed.')
       return root
     }
 
@@ -135,41 +156,37 @@ export function HookRoot<Props extends object | undefined, HookValue>(
     try {
       stateRef.currentValue = hookFunction(renderProps)
       stateRef.isSuspended = false
+
       needsRender = false
+      valueFresh = true
       latestRenderProps = renderProps
 
       hook.afterRenderEffects.forEach((e) => e())
       hook.afterRenderEffects.clear()
 
-      onUpdate && onUpdate(stateRef.currentValue)
-
-      valueFresh = true
+      if (onUpdate) {
+        onUpdate(stateRef.currentValue)
+      }
       if (promisedValue) {
         promisedValue.resolve(stateRef.currentValue)
       }
-    } catch (e) {
-      if (e instanceof Promise || typeof e.then === 'function') {
+    } catch (caughtError) {
+      if (
+        caughtError instanceof Promise ||
+        (caughtError && typeof caughtError.then === 'function')
+      ) {
         stateRef.isSuspended = true
-        e.then(() => {
-          if (renderId === thisRenderID) {
-            return performRender(nextProps)
-          }
-          return null
-        }).catch((error: unknown) => {
-          destroy()
-
-          if (promisedValue) {
-            promisedValue.reject(error)
-          }
-        })
+        caughtError
+          .then(() => {
+            if (renderId === thisRenderID) {
+              return performRender(nextProps)
+            }
+            return null
+          })
+          .catch(destroy)
       } else {
-        destroy()
-
-        if (promisedValue) {
-          promisedValue.reject(e)
-        }
-
-        throw e
+        destroy(caughtError)
+        throw caughtError
       }
     }
 

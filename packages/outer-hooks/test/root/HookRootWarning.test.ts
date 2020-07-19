@@ -6,7 +6,7 @@ import {
   useReducer,
   useRef,
   useState,
-} from '../src'
+} from '../../src'
 
 const missingHookRootError = `please wrap your outer hook in a HookRoot`
 

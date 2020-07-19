@@ -1,4 +1,4 @@
-import { act, HookRoot } from '../src'
+import { act, HookRoot } from '../../src'
 
 const usePropReturningHook = <P>(props: P) => props
 

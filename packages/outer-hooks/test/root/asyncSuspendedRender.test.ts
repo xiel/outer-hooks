@@ -1,4 +1,4 @@
-import { act, HookRoot } from '../src'
+import { act, HookRoot } from '../../src'
 
 const cache = new Map<string, string>()
 
@@ -59,5 +59,7 @@ describe('HookRoot | async/suspended render', () => {
     }
     expect(hookRoot.state.isSuspended).toEqual(true)
     expect(hookRoot.state.isDestroyed).toEqual(true)
+
+    hookRoot.update()
   })
 })
