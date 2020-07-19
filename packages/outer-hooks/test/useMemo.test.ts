@@ -1,10 +1,11 @@
 import { HookRoot, useMemo } from '../src'
 
 describe('useMemo', () => {
-  it('should return a value that can be awaited', async () => {
+  it('should be called when deps change', async () => {
     const valueFactory = jest.fn((a) => ({
       aMemoProp: a,
     }))
+
     const hookRoot = HookRoot(
       ({ a }) => {
         return useMemo(() => valueFactory(a), [a])
