@@ -4,18 +4,17 @@ const callRenderFn = (fn: FlushableRenderFn) => fn()
 
 type Act = <T>(fn: () => T) => T
 
-export let act: Act =
-  process.env.NODE_ENV === 'production'
-    ? () => {
-        throw new Error('act is only available in tests')
-      }
-    : (fn) => {
-        outerHookState.flushRender = true
-        const ret = fn()
-        outerHookState.flushRender = false
+export let act: Act = (fn) => {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('act is only available in tests')
+  }
 
-        outerHookState.rendersToFlush.forEach(callRenderFn)
-        outerHookState.rendersToFlush.clear()
+  outerHookState.flushRender = true
+  const ret = fn()
+  outerHookState.flushRender = false
 
-        return ret
-      }
+  outerHookState.rendersToFlush.forEach(callRenderFn)
+  outerHookState.rendersToFlush.clear()
+
+  return ret
+}

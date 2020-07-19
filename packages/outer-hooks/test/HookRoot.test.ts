@@ -100,3 +100,12 @@ describe('HookRoot Interface', () => {
     })
   })
 })
+
+describe('act', () => {
+  test('warn if act is used in production', () => {
+    const prevEnv = process.env.NODE_ENV
+    process.env.NODE_ENV = 'production'
+    expect(() => act(() => HookRoot(() => 42))).toThrow()
+    process.env.NODE_ENV = prevEnv
+  })
+})
