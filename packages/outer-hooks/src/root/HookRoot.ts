@@ -1,8 +1,7 @@
+import { __DEV__ } from '../core/isDev'
 import { ActiveHook, outerHookState } from '../core/OuterHookState'
 import { createPromisedValue, PromisedValue } from '../core/promisedValue'
 import { Root, State } from './HookRootTypes'
-
-const __DEV__ = process.env.NODE_ENV !== 'production'
 
 type OnUpdateFn<HookValue> = (nextValue: HookValue) => void
 
@@ -51,17 +50,17 @@ export function HookRoot<Props extends object | undefined, HookValue>(
       }
       if (!promisedValue) {
         if (stateRef.isDestroyed) {
-          return Promise.reject('already destroyed')
+          return Promise.reject('unavailable | hookRoot already destroyed')
         }
         promisedValue = createPromisedValue<HookValue>()
       }
       return promisedValue.promise
     },
     get effects() {
-      return new Promise<void>((resolve) => {
-        stateRef.value.then(() => {
-          requestAnimationFrame(() => resolve())
-        })
+      return new Promise<void>((resolveEffects, rejectEffects) => {
+        stateRef.value
+          .then(() => requestAnimationFrame(() => resolveEffects()))
+          .catch(rejectEffects)
       })
     },
   }
@@ -128,8 +127,12 @@ export function HookRoot<Props extends object | undefined, HookValue>(
     stateRef.currentValue = undefined
     valueFresh = false
     promisedValue = undefined
-
     destroyPromise = new Promise<void>((resolve) => {
+      // flush all already existing destroy effects (also clears still pending effects)
+      hook.afterDestroyEffects.forEach((e) => e())
+      hook.afterDestroyEffects.clear()
+
+      // flush destroy effects after animation frame (eg. non-layout effects cleanups)
       requestAnimationFrame(() => {
         hook.afterDestroyEffects.forEach((e) => e())
         hook.afterDestroyEffects.clear()
@@ -181,12 +184,15 @@ export function HookRoot<Props extends object | undefined, HookValue>(
             if (renderId === thisRenderID) {
               return performRender(nextProps)
             }
-            return null
+            return undefined
           })
           .catch(destroy)
       } else {
         destroy(caughtError)
-        throw caughtError
+
+        if (__DEV__) {
+          console.error(caughtError)
+        }
       }
     }
 

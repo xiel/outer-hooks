@@ -59,11 +59,15 @@ function useInternalEffect(
       if (isLayout) {
         runEffectAndAddCleanup()
       } else {
-        requestAnimationFrame(runEffectAndAddCleanup)
+        // prevent that this is ever called, when destroyed before rAF
+        const rafId = requestAnimationFrame(runEffectAndAddCleanup)
+        hookState.afterDestroyEffects.add(() => cancelAnimationFrame(rafId))
       }
 
       function runEffectAndAddCleanup() {
-        hookState.cleanupFn && hookState.cleanupFn()
+        if (typeof hookState.cleanupFn !== 'undefined') {
+          hookState.cleanupFn()
+        }
 
         const cleanupFnReturned = effect()
 

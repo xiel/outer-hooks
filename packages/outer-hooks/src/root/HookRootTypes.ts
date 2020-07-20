@@ -1,3 +1,4 @@
+// TODO: consider moving these up onto root
 export interface State<HookValue> {
   isSuspended: boolean
   isDestroyed: boolean
