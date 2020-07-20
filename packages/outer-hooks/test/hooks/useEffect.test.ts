@@ -139,8 +139,128 @@ describe('useEffect + useLayoutEffect', () => {
       expect(mountEffectCleanup).toHaveBeenCalledTimes(1)
     })
 
-    it('should not return a value anymore', function() {})
+    it('should not return a value anymore', async () => {
+      const valueCatch = jest.fn()
+      await hookRoot.state.value.catch(valueCatch)
+      expect(valueCatch).toHaveBeenCalledTimes(1)
+      expect(valueCatch).toHaveBeenLastCalledWith(
+        'unavailable | hookRoot already destroyed'
+      )
+    })
   })
 
-  it.todo('should call cleanup on destroy')
+  it('should call all cleanup functions on destroy, when all effects ran before', async () => {
+    const layoutEffectCleanup = jest.fn()
+    const effectCleanup = jest.fn()
+    const useJestHook = jest.fn(() => {
+      useLayoutEffect(() => layoutEffectCleanup)
+      useEffect(() => effectCleanup)
+    })
+
+    const hookRoot = HookRoot(useJestHook)
+    await hookRoot.state.effects
+    await hookRoot.destroy()
+
+    expect(layoutEffectCleanup).toHaveBeenCalledTimes(1)
+    expect(effectCleanup).toHaveBeenCalledTimes(1)
+  })
+
+  it('should only call layout cleanup on destroy, when only value was awaited before destroy', async () => {
+    const layoutEffectCleanup = jest.fn()
+    const effectCleanup = jest.fn()
+    const useJestHook = jest.fn(() => {
+      useLayoutEffect(() => layoutEffectCleanup)
+      useEffect(() => effectCleanup)
+    })
+
+    const hookRoot = HookRoot(useJestHook)
+    await hookRoot.state.value
+    await hookRoot.destroy()
+
+    expect(layoutEffectCleanup).toHaveBeenCalledTimes(1)
+    expect(effectCleanup).toHaveBeenCalledTimes(0)
+  })
+
+  it('should not call effect & cleanup if hook was not rendered fully (error/exception)', async () => {
+    const eachRenderLayoutEffectCleanup = jest.fn()
+    const eachRenderLayoutEffect = jest.fn(() => eachRenderLayoutEffectCleanup)
+    const eachRenderEffectCleanup = jest.fn()
+    const eachRenderEffect = jest.fn(() => eachRenderEffectCleanup)
+    const consoleErrorSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementationOnce(jest.fn())
+
+    const error = new Error('this hook throws')
+    const useJestHook = () => {
+      useLayoutEffect(eachRenderLayoutEffect)
+      useEffect(eachRenderEffect)
+
+      // simulate a exception
+      throw error
+    }
+
+    let hookRoot = HookRoot(useJestHook)
+
+    const effectCatch = jest.fn()
+    const valueCatch = jest.fn()
+    await hookRoot.state.value.catch(valueCatch)
+    await hookRoot.state.effects.catch(effectCatch)
+
+    expect(consoleErrorSpy).toHaveBeenCalledTimes(1)
+    expect(valueCatch).toHaveBeenCalledTimes(1)
+    expect(valueCatch).toHaveBeenLastCalledWith(error)
+    expect(effectCatch).toHaveBeenCalledTimes(1)
+
+    expect(eachRenderLayoutEffect).toHaveBeenCalledTimes(0)
+    expect(eachRenderLayoutEffectCleanup).toHaveBeenCalledTimes(0)
+    expect(eachRenderEffect).toHaveBeenCalledTimes(0)
+    expect(eachRenderEffectCleanup).toHaveBeenCalledTimes(0)
+    expect(hookRoot.state.isDestroyed).toBeTruthy()
+  })
+})
+
+describe('effects promise', () => {
+  it('should resolve after all effects have run', async () => {
+    const effect = jest.fn()
+    const layoutEffect = jest.fn()
+    const useJestHook = jest.fn(() => {
+      useEffect(effect)
+      useLayoutEffect(layoutEffect)
+    })
+    const hookRoot = HookRoot(useJestHook)
+
+    expect(effect).toHaveBeenCalledTimes(0)
+    expect(layoutEffect).toHaveBeenCalledTimes(0)
+
+    await hookRoot.state.value
+
+    // only layout effect should have been called after value promise
+    expect(effect).toHaveBeenCalledTimes(0)
+    expect(layoutEffect).toHaveBeenCalledTimes(1)
+
+    await hookRoot.state.effects
+
+    // all effects should have rendered by now
+    expect(effect).toHaveBeenCalledTimes(1)
+    expect(layoutEffect).toHaveBeenCalledTimes(1)
+    expect(useJestHook).toHaveBeenCalledTimes(1)
+  })
+
+  it('should throw after destroy', async () => {
+    const useJestHook = jest.fn(() => 'hook value')
+    const hookRoot = HookRoot(useJestHook)
+
+    expect(await hookRoot.state.value).toBe('hook value')
+    expect(useJestHook).toHaveBeenCalledTimes(1)
+
+    expect(hookRoot.destroy()).toMatchInlineSnapshot(`Promise {}`)
+
+    const effectCatch = jest.fn()
+    await hookRoot.state.effects.catch(effectCatch)
+
+    expect(effectCatch).toHaveBeenCalledTimes(1)
+    expect(effectCatch).toHaveBeenLastCalledWith(
+      'unavailable | hookRoot already destroyed'
+    )
+  })
 })
