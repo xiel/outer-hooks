@@ -20,5 +20,5 @@ export interface Root<Props, HookValue> {
   state: State<HookValue>
   render: RenderFn<Props, HookValue>
   update: UpdateFn<Props, HookValue>
-  destroy(): Promise<void>
+  destroy(reason?: unknown): Promise<void>
 }

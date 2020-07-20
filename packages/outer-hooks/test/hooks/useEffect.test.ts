@@ -18,8 +18,6 @@ describe('useEffect', () => {
     expect(eachRenderEffect).toHaveBeenCalledTimes(2)
     expect(mountEffect).toHaveBeenCalledTimes(1)
   })
-
-  test.todo('order of execution')
 })
 
 describe('useLayoutEffect', () => {

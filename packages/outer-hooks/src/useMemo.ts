@@ -19,6 +19,8 @@ export function useMemo<T>(
   deps: Dependencies | undefined
 ): T {
   const hookState = useInternalStatefulHook('memo', initMemoState)
+
+  // TODO: can be simplyfied
   let value: T
 
   if (depsRequireUpdate(deps, hookState.lastDeps)) {

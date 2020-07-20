@@ -13,7 +13,8 @@ export interface HookState {
 
 export const HookStates = new WeakMap<ActiveHook, HookState[]>()
 export type InitHookStateFn<Type extends keyof HookState> = (
-  currentHook: ActiveHook
+  currentHook: ActiveHook,
+  currentIndex: number
 ) => HookState[Type]
 
 export function useInternalStatefulHook<Type extends keyof HookState>(
@@ -31,7 +32,7 @@ export function useInternalStatefulHook<Type extends keyof HookState>(
     !(type in currentHookStates[currentIndex])
   ) {
     currentHookStates[currentIndex] = currentHookStates[currentIndex] || {}
-    currentHookStates[currentIndex][type] = initFn(currentHook)
+    currentHookStates[currentIndex][type] = initFn(currentHook, currentIndex)
     HookStates.set(outerHookState.currentHook, currentHookStates)
   }
 
