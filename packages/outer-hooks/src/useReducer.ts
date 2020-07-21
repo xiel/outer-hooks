@@ -38,7 +38,7 @@ export function useReducer<State, Action, InitialArg>(
       const newValue = reducer(reducerState.value, action)
       if (!Object.is(reducerState.value, newValue)) {
         reducerState.value = newValue
-        currentHook.requestRender()
+        currentHook.requestRender(true)
       }
     }
 

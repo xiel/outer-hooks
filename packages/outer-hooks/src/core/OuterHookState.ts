@@ -3,7 +3,7 @@ export type FlushableRenderFn = () => unknown
 
 export interface ActiveHook {
   displayName: string
-  requestRender(): void
+  requestRender(immediate?: boolean): void
   afterRenderEffects: Set<Effect>
   afterDestroyEffects: Set<Effect>
 }

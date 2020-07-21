@@ -32,6 +32,7 @@ export function HookRoot<Props extends object | undefined, HookValue>(
   // TODO: move props onto state / root
   let renderId = -1
   let needsRender = false
+  let needsRenderImmediately = false
   let latestRenderProps: Props
 
   let valueFresh = false
@@ -83,7 +84,10 @@ export function HookRoot<Props extends object | undefined, HookValue>(
   const hook: ActiveHook = {
     displayName: hookName,
     // batches all updates in current tick or flush
-    requestRender() {
+    requestRender(immediate) {
+      if (immediate && !needsRenderImmediately) {
+        needsRenderImmediately = true
+      }
       if (needsRender) {
         return
       }
@@ -94,7 +98,7 @@ export function HookRoot<Props extends object | undefined, HookValue>(
       if (outerHookState.flushRender) {
         outerHookState.rendersToFlush.add(performRender)
       } else {
-        setTimeout(() => Promise.resolve(undefined).then(performRender), 1)
+        setTimeout(() => Promise.resolve(undefined).then(performRender))
       }
     },
     afterRenderEffects: new Set(),
@@ -154,6 +158,7 @@ export function HookRoot<Props extends object | undefined, HookValue>(
   }
 
   function performRender(nextProps?: Props): Root<Props, HookValue> {
+    if (!needsRender) return root
     if (stateRef.isDestroyed) {
       __DEV__ && console.warn('can not re-render a Hook, that was destroyed.')
       return root
@@ -178,10 +183,10 @@ export function HookRoot<Props extends object | undefined, HookValue>(
       hook.afterRenderEffects.clear()
 
       if (onUpdate) {
-        onUpdate(stateRef.currentValue)
+        onUpdate(stateRef.currentValue!)
       }
       if (promisedValue && !promisedValue.isFulfilled) {
-        promisedValue.resolve(stateRef.currentValue)
+        promisedValue.resolve(stateRef.currentValue!)
       }
     } catch (caughtError) {
       if (
@@ -204,6 +209,14 @@ export function HookRoot<Props extends object | undefined, HookValue>(
     outerHookState.currentHook = prevHook
     outerHookState.currentIndex = prevIndex
 
-    return root
+    if (needsRenderImmediately) {
+      needsRender = true
+      promisedValue = undefined
+      valueFresh = false
+      needsRenderImmediately = false
+      return performRender()
+    } else {
+      return root
+    }
   }
 }
