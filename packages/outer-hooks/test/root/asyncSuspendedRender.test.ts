@@ -8,8 +8,8 @@ const getFromCache = (key: string) => {
   }
   return new Promise<string>((r, reject) =>
     setTimeout(() => {
-      if (key === 'Dogs') {
-        reject()
+      if (key === 'Spiders') {
+        reject('scary!')
       }
       const value = `${key} are fun!`
       cache.set(key, value)
@@ -52,14 +52,13 @@ describe('HookRoot | async/suspended render', () => {
     expect(hookRoot.state.isSuspended).toEqual(false)
 
     try {
-      hookRoot.update({ animals: 'Dogs' })
+      hookRoot.update({ animals: 'Spiders' })
       await hookRoot.state.value
     } catch (e) {
-      expect(e)
+      expect(e).toEqual('scary!')
     }
+
     expect(hookRoot.state.isSuspended).toEqual(true)
     expect(hookRoot.state.isDestroyed).toEqual(true)
-
-    hookRoot.update()
   })
 })

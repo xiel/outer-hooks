@@ -91,8 +91,10 @@ export function HookRoot<Props extends object | undefined, HookValue>(
       if (needsRender) {
         return
       }
+      if (promisedValue && promisedValue.isFulfilled) {
+        promisedValue = undefined
+      }
       needsRender = true
-      promisedValue = undefined
       valueFresh = false
 
       if (outerHookState.flushRender) {
@@ -170,6 +172,7 @@ export function HookRoot<Props extends object | undefined, HookValue>(
 
     const thisRenderID = (renderId += 1)
     const renderProps = nextProps ?? latestRenderProps
+    let hadError = false
 
     try {
       stateRef.currentValue = hookFunction(renderProps)
@@ -181,14 +184,9 @@ export function HookRoot<Props extends object | undefined, HookValue>(
 
       hook.afterRenderEffects.forEach((e) => e())
       hook.afterRenderEffects.clear()
-
-      if (onUpdate) {
-        onUpdate(stateRef.currentValue!)
-      }
-      if (promisedValue && !promisedValue.isFulfilled) {
-        promisedValue.resolve(stateRef.currentValue!)
-      }
     } catch (caughtError) {
+      hadError = true
+
       if (
         caughtError instanceof Promise ||
         (caughtError && typeof caughtError.then === 'function')
@@ -209,13 +207,26 @@ export function HookRoot<Props extends object | undefined, HookValue>(
     outerHookState.currentHook = prevHook
     outerHookState.currentIndex = prevIndex
 
+    if (hadError) {
+      return root
+    }
+
     if (needsRenderImmediately) {
+      if (promisedValue && promisedValue.isFulfilled) {
+        promisedValue = undefined
+      }
       needsRender = true
-      promisedValue = undefined
       valueFresh = false
       needsRenderImmediately = false
+
       return performRender()
     } else {
+      if (onUpdate) {
+        onUpdate(stateRef.currentValue!)
+      }
+      if (promisedValue && !promisedValue.isFulfilled) {
+        promisedValue.resolve(stateRef.currentValue!)
+      }
       return root
     }
   }

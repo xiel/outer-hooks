@@ -114,7 +114,6 @@ describe('useState', () => {
       return currentState
     })
 
-    expect(await hookRoot.state.value).toBe(0)
     expect(await hookRoot.state.value).toBe(5)
     await hookRoot.state.effects
     expect(await hookRoot.state.value).toBe(5)
