@@ -1,7 +1,11 @@
 import { depsRequireUpdate } from './core/areDepsEqual'
 import { ActiveHook, Effect } from './core/OuterHookState'
+import { createRef, RefObject } from './core/refObject'
 import { Dependencies } from './core/sharedTypes'
-import { useInternalStatefulHook } from './core/useInternalStatefulHook'
+import {
+  InitHookStateFn,
+  useInternalStatefulHook,
+} from './core/useInternalStatefulHook'
 
 const isEffectEnv = Boolean(
   global?.window?.document?.documentElement && requestAnimationFrame
@@ -38,23 +42,28 @@ interface HookEffects {
   runLayoutEffects: Effect
 }
 
-interface RenderDestroyHookEffects {
+interface ActiveHookEffectRunner {
   render: HookEffects
   destroy: HookEffects
   runRenderEffects: Effect
   runDestroyEffects: Effect
 }
 
-const ActiveHookEffectsMap = new WeakMap<ActiveHook, RenderDestroyHookEffects>()
+const ActiveHookEffectsMap = new WeakMap<ActiveHook, ActiveHookEffectRunner>()
 
-export interface EffectState {
-  activeHook: ActiveHook
-  hooksEffects: RenderDestroyHookEffects
-  renderEffects: Set<Effect>
-  destroyEffects: Set<Effect>
-  lastDeps?: Dependencies
-  cleanupFn?: () => void
-}
+type RenderEffects = Set<Effect>
+type DestroyEffects = Set<Effect>
+type LastDeps = RefObject<Dependencies | undefined>
+type CleanUpFn = RefObject<Effect | undefined>
+
+export type EffectState = [
+  ActiveHook,
+  ActiveHookEffectRunner,
+  RenderEffects,
+  DestroyEffects,
+  LastDeps,
+  CleanUpFn
+]
 
 function createHookEffects(): HookEffects {
   const effects: Effect[] = []
@@ -69,7 +78,7 @@ function createHookEffects(): HookEffects {
   }
 }
 
-function createRenderDestroyHookEffects(): RenderDestroyHookEffects {
+function createActiveHookEffectRunner(): ActiveHookEffectRunner {
   const render = createHookEffects()
   const destroy = createHookEffects()
   const runRenderEffects = () => {
@@ -88,54 +97,68 @@ function createRenderDestroyHookEffects(): RenderDestroyHookEffects {
   }
 }
 
+function initEffectState(isLayout: boolean) {
+  const initEffectStateFn: InitHookStateFn<'effect'> = (
+    activeHook,
+    currentIndex
+  ) => {
+    let hooksEffects: ActiveHookEffectRunner
+
+    if (ActiveHookEffectsMap.has(activeHook)) {
+      hooksEffects = ActiveHookEffectsMap.get(activeHook)!
+    } else {
+      hooksEffects = createActiveHookEffectRunner()
+      ActiveHookEffectsMap.set(activeHook, hooksEffects)
+    }
+
+    const renderEffects = new Set<Effect>()
+    const destroyEffects = new Set<Effect>()
+    const lastDeps = createRef<Dependencies | undefined>(undefined)
+    const cleanupFn = createRef<Effect | undefined>(undefined)
+
+    hooksEffects.render[isLayout ? 'layoutEffects' : 'effects'][
+      currentIndex
+    ] = () => {
+      renderEffects.forEach((e) => e())
+      renderEffects.clear()
+    }
+
+    hooksEffects.destroy[isLayout ? 'layoutEffects' : 'effects'][
+      currentIndex
+    ] = () => {
+      destroyEffects.forEach((e) => e())
+      destroyEffects.clear()
+    }
+
+    return [
+      activeHook,
+      hooksEffects,
+      renderEffects,
+      destroyEffects,
+      lastDeps,
+      cleanupFn,
+    ]
+  }
+  return initEffectStateFn
+}
+
 function useInternalEffect(
   effect: () => void | (() => void),
   deps: Dependencies | undefined,
   isLayout: boolean
 ) {
-  const effectState = useInternalStatefulHook(
-    'effect',
-    (activeHook, currentIndex) => {
-      let hooksEffects: RenderDestroyHookEffects
+  const [
+    activeHook,
+    hooksEffects,
+    renderEffects,
+    destroyEffects,
+    lastDeps,
+    cleanupFn,
+  ] = useInternalStatefulHook('effect', initEffectState(isLayout))!
 
-      if (ActiveHookEffectsMap.has(activeHook)) {
-        hooksEffects = ActiveHookEffectsMap.get(activeHook)!
-      } else {
-        hooksEffects = createRenderDestroyHookEffects()
-        ActiveHookEffectsMap.set(activeHook, hooksEffects)
-      }
-
-      const renderEffects = new Set<Effect>()
-      const destroyEffects = new Set<Effect>()
-
-      hooksEffects.render[isLayout ? 'layoutEffects' : 'effects'][
-        currentIndex
-      ] = () => {
-        renderEffects.forEach((e) => e())
-        renderEffects.clear()
-      }
-
-      hooksEffects.destroy[isLayout ? 'layoutEffects' : 'effects'][
-        currentIndex
-      ] = () => {
-        destroyEffects.forEach((e) => e())
-        destroyEffects.clear()
-      }
-
-      return {
-        activeHook,
-        hooksEffects,
-        renderEffects,
-        destroyEffects,
-        lastDeps: undefined,
-        cleanupFn: undefined,
-      }
-    }
-  )!
-
-  if (isEffectEnv && depsRequireUpdate(deps, effectState.lastDeps)) {
+  if (isEffectEnv && depsRequireUpdate(deps, lastDeps.ref.current)) {
     const renderEffect = () => {
-      effectState.lastDeps = deps
+      lastDeps.ref.current = deps
 
       if (isLayout) {
         runEffectAndAddCleanup()
@@ -143,37 +166,33 @@ function useInternalEffect(
         // prevent that this is ever called, when destroyed before rAF
         // TODO: maybe cheaper to just check for destroyed state in runEffect?
         const rafId = requestAnimationFrame(runEffectAndAddCleanup)
-        effectState.destroyEffects.add(() => cancelAnimationFrame(rafId))
+        destroyEffects.add(() => cancelAnimationFrame(rafId))
       }
 
       function runEffectAndAddCleanup() {
-        if (typeof effectState.cleanupFn !== 'undefined') {
-          effectState.cleanupFn()
+        if (typeof cleanupFn.ref.current !== 'undefined') {
+          cleanupFn.ref.current()
         }
 
         const cleanupFnReturned = effect()
 
         // TODO: only do this when there is actually a function returned
-        effectState.cleanupFn = cleanup
-        effectState.destroyEffects.add(cleanup)
+        cleanupFn.ref.current = cleanup
+        destroyEffects.add(cleanup)
 
         function cleanup() {
           if (typeof cleanupFnReturned === 'function') {
             cleanupFnReturned()
           }
-          effectState.destroyEffects.delete(cleanup)
+          destroyEffects.delete(cleanup)
         }
       }
     }
-    effectState.renderEffects.add(renderEffect)
+    renderEffects.add(renderEffect)
   }
 
   if (isEffectEnv) {
-    effectState.activeHook.afterRenderEffects.add(
-      effectState.hooksEffects.runRenderEffects
-    )
-    effectState.activeHook.afterDestroyEffects.add(
-      effectState.hooksEffects.runDestroyEffects
-    )
+    activeHook.afterRenderEffects.add(hooksEffects.runRenderEffects)
+    activeHook.afterDestroyEffects.add(hooksEffects.runDestroyEffects)
   }
 }

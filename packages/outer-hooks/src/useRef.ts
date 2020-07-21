@@ -1,4 +1,5 @@
 import { ActiveHook } from './core/OuterHookState'
+import { createRef } from './core/refObject'
 import { useInternalStatefulHook } from './core/useInternalStatefulHook'
 
 export interface MutableRefObject<T> {
@@ -19,9 +20,5 @@ export function useRef<T>(initialValue?: T): MutableRefObject<T> {
 const initRefState = <T>(initialValue?: T) => (
   activeHook: ActiveHook
 ): RefState<T | undefined> => {
-  return Object.freeze({
-    ref: {
-      current: initialValue,
-    },
-  })
+  return createRef(initialValue)
 }

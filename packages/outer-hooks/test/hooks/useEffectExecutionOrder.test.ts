@@ -1,7 +1,7 @@
 import { HookRoot, useEffect, useLayoutEffect } from '../../src'
 import { Root } from '../../src/root/HookRootTypes'
 
-describe('effects order of execution', () => {
+describe('effects - order of execution', () => {
   let log: string[] = []
   let hookRoot: Root<{}, number>
   let renderId = -1
@@ -93,7 +93,7 @@ describe('effects order of execution', () => {
     `)
   })
 
-  it('should call  effect cleanups on destroy', async () => {
+  it('should call effect cleanups on destroy', async () => {
     log = []
     log.push('-> after destroy')
     await hookRoot.destroy()
