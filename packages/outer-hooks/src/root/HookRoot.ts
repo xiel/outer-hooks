@@ -190,12 +190,7 @@ export function HookRoot<Props extends object | undefined, HookValue>(
       ) {
         stateRef.isSuspended = true
         caughtError
-          .then(() => {
-            if (renderId === thisRenderID) {
-              return performRender(nextProps)
-            }
-            return undefined
-          })
+          .then(() => renderId === thisRenderID && performRender(nextProps))
           .catch(destroy)
       } else {
         destroy(caughtError)
