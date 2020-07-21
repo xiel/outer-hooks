@@ -65,11 +65,13 @@ export type EffectState = [
   CleanUpFn
 ]
 
+const callEffect = (effect: Effect) => effect()
+
 function createHookEffects(): HookEffects {
   const effects: Effect[] = []
   const layoutEffects: Effect[] = []
-  const runEffects = () => effects.forEach((e) => e())
-  const runLayoutEffects = () => layoutEffects.forEach((e) => e())
+  const runEffects = () => effects.forEach(callEffect)
+  const runLayoutEffects = () => layoutEffects.forEach(callEffect)
   return {
     effects,
     layoutEffects,
@@ -115,18 +117,15 @@ function initEffectState(isLayout: boolean) {
     const destroyEffects = new Set<Effect>()
     const lastDeps = createRef<Dependencies | undefined>(undefined)
     const cleanupFn = createRef<Effect | undefined>(undefined)
+    const effectsToUse = isLayout ? 'layoutEffects' : 'effects'
 
-    hooksEffects.render[isLayout ? 'layoutEffects' : 'effects'][
-      currentIndex
-    ] = () => {
-      renderEffects.forEach((e) => e())
+    hooksEffects.render[effectsToUse][currentIndex] = () => {
+      renderEffects.forEach(callEffect)
       renderEffects.clear()
     }
 
-    hooksEffects.destroy[isLayout ? 'layoutEffects' : 'effects'][
-      currentIndex
-    ] = () => {
-      destroyEffects.forEach((e) => e())
+    hooksEffects.destroy[effectsToUse][currentIndex] = () => {
+      destroyEffects.forEach(callEffect)
       destroyEffects.clear()
     }
 
