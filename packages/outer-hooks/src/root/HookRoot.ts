@@ -1,4 +1,4 @@
-import { __DEV__ } from '../core/isDev'
+import { __DEV__, isEffectEnvironment } from '../core/env'
 import { ActiveHook, outerHookState } from '../core/OuterHookState'
 import { createPromisedValue, PromisedValue } from '../core/promisedValue'
 import { Root, State } from './HookRootTypes'
@@ -59,7 +59,13 @@ export function HookRoot<Props extends object | undefined, HookValue>(
     get effects() {
       return new Promise<void>((resolveEffects, rejectEffects) => {
         stateRef.value
-          .then(() => requestAnimationFrame(() => resolveEffects()))
+          .then(() => {
+            if (isEffectEnvironment) {
+              requestAnimationFrame(() => resolveEffects())
+            } else {
+              setTimeout(resolveEffects)
+            }
+          })
           .catch(rejectEffects)
       })
     },
@@ -132,12 +138,16 @@ export function HookRoot<Props extends object | undefined, HookValue>(
       hook.afterDestroyEffects.forEach((e) => e())
       hook.afterDestroyEffects.clear()
 
-      // flush destroy effects after animation frame (eg. non-layout effects cleanups)
-      requestAnimationFrame(() => {
-        hook.afterDestroyEffects.forEach((e) => e())
-        hook.afterDestroyEffects.clear()
+      if (isEffectEnvironment) {
+        // again flush destroy effects after animation frame (eg. non-layout effects cleanups)
+        requestAnimationFrame(() => {
+          hook.afterDestroyEffects.forEach((e) => e())
+          hook.afterDestroyEffects.clear()
+          resolve()
+        })
+      } else {
         resolve()
-      })
+      }
     })
 
     return destroyPromise
@@ -170,7 +180,7 @@ export function HookRoot<Props extends object | undefined, HookValue>(
       if (onUpdate) {
         onUpdate(stateRef.currentValue)
       }
-      if (promisedValue) {
+      if (promisedValue && !promisedValue.isFulfilled) {
         promisedValue.resolve(stateRef.currentValue)
       }
     } catch (caughtError) {

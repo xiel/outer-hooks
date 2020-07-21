@@ -1,4 +1,5 @@
 import { depsRequireUpdate } from './core/areDepsEqual'
+import { isEffectEnvironment } from './core/env'
 import { ActiveHook, Effect } from './core/OuterHookState'
 import { createRef, RefObject } from './core/refObject'
 import { Dependencies } from './core/sharedTypes'
@@ -6,10 +7,6 @@ import {
   InitHookStateFn,
   useInternalStatefulHook,
 } from './core/useInternalStatefulHook'
-
-const isEffectEnv = Boolean(
-  global?.window?.document?.documentElement && requestAnimationFrame
-)
 
 export function useEffect(effect: () => void | (() => void)): void
 export function useEffect(
@@ -155,7 +152,7 @@ function useInternalEffect(
     cleanupFn,
   ] = useInternalStatefulHook('effect', initEffectState(isLayout))!
 
-  if (isEffectEnv && depsRequireUpdate(deps, lastDeps.ref.current)) {
+  if (isEffectEnvironment && depsRequireUpdate(deps, lastDeps.ref.current)) {
     const renderEffect = () => {
       lastDeps.ref.current = deps
 
@@ -190,7 +187,7 @@ function useInternalEffect(
     renderEffects.add(renderEffect)
   }
 
-  if (isEffectEnv) {
+  if (isEffectEnvironment) {
     activeHook.afterRenderEffects.add(hooksEffects.runRenderEffects)
     activeHook.afterDestroyEffects.add(hooksEffects.runDestroyEffects)
   }
