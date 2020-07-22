@@ -142,7 +142,7 @@ describe('useEffect + useLayoutEffect', () => {
       await hookRoot.state.value.catch(valueCatch)
       expect(valueCatch).toHaveBeenCalledTimes(1)
       expect(valueCatch).toHaveBeenLastCalledWith(
-        'unavailable | hookRoot already destroyed'
+        'not available | hookRoot is destroyed'
       )
     })
   })
@@ -177,77 +177,6 @@ describe('useEffect + useLayoutEffect', () => {
 
     expect(layoutEffectCleanup).toHaveBeenCalledTimes(1)
     expect(effectCleanup).toHaveBeenCalledTimes(0)
-  })
-
-  it('should not call effect & cleanup if hook was not rendered fully (error/exception)', async () => {
-    const eachRenderLayoutEffectCleanup = jest.fn()
-    const eachRenderLayoutEffect = jest.fn(() => eachRenderLayoutEffectCleanup)
-    const eachRenderEffectCleanup = jest.fn()
-    const eachRenderEffect = jest.fn(() => eachRenderEffectCleanup)
-    const consoleErrorSpy = jest
-      .spyOn(console, 'error')
-      .mockImplementationOnce(jest.fn())
-
-    const error = new Error('this hook throws')
-    const useJestHook = () => {
-      useLayoutEffect(eachRenderLayoutEffect)
-      useEffect(eachRenderEffect)
-
-      // simulate a exception
-      throw error
-    }
-
-    let hookRoot = HookRoot(useJestHook)
-
-    const effectCatch = jest.fn()
-    const valueCatch = jest.fn()
-    await hookRoot.state.value.catch(valueCatch)
-    await hookRoot.state.effects.catch(effectCatch)
-
-    expect(consoleErrorSpy).toHaveBeenCalledTimes(1)
-    expect(valueCatch).toHaveBeenCalledTimes(1)
-    expect(valueCatch).toHaveBeenLastCalledWith(error)
-    expect(effectCatch).toHaveBeenCalledTimes(1)
-
-    expect(eachRenderLayoutEffect).toHaveBeenCalledTimes(0)
-    expect(eachRenderLayoutEffectCleanup).toHaveBeenCalledTimes(0)
-    expect(eachRenderEffect).toHaveBeenCalledTimes(0)
-    expect(eachRenderEffectCleanup).toHaveBeenCalledTimes(0)
-    expect(hookRoot.state.isDestroyed).toBeTruthy()
-  })
-
-  it('should cleanup when error was thrown in effect', async () => {
-    let log: string[] = []
-    let renderId = -1
-    let cleanUp = (l: string) => `${l} -> cleanup`
-    const errorMessage = 'error in effect!'
-
-    const hookRoot = HookRoot(() => {
-      renderId++
-
-      useEffect(() => {
-        const label = `02 | useEffect (r${renderId})`
-        log.push(label)
-
-        if (renderId === 2) {
-          log.push(`-> ${errorMessage}`)
-          throw new Error(errorMessage)
-        }
-
-        return () => log.push(cleanUp(label))
-      })
-
-      useLayoutEffect(() => {
-        const label = `01 | useLayoutEffect (r${renderId})`
-        log.push(label)
-        return () => log.push(cleanUp(label))
-      })
-    })
-
-    expect(await hookRoot.state.effects)
-    expect(log).toMatchInlineSnapshot(`${renderId}`)
-    expect(await hookRoot.update().state.effects)
-    expect(await hookRoot.update().state.effects)
   })
 })
 
@@ -292,7 +221,7 @@ describe('effects promise', () => {
 
     expect(effectCatch).toHaveBeenCalledTimes(1)
     expect(effectCatch).toHaveBeenLastCalledWith(
-      'unavailable | hookRoot already destroyed'
+      'not available | hookRoot is destroyed'
     )
   })
 })

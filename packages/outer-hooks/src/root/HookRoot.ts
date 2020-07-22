@@ -29,7 +29,7 @@ export function HookRoot<Props extends object | undefined, HookValue>(
     initialProps = initialPropsOrOnUpdate as Props
   }
 
-  // TODO: move props onto state / root
+  // TODO: move props onto state / hookRoot
   let renderId = -1
   let needsRender = false
   let needsRenderImmediately = false
@@ -51,7 +51,7 @@ export function HookRoot<Props extends object | undefined, HookValue>(
       }
       if (!promisedValue) {
         if (stateRef.isDestroyed) {
-          return Promise.reject('unavailable | hookRoot already destroyed')
+          return Promise.reject('not available | hookRoot is destroyed')
         }
         promisedValue = createPromisedValue<HookValue>()
       }
@@ -61,10 +61,13 @@ export function HookRoot<Props extends object | undefined, HookValue>(
       return new Promise<void>((resolveEffects, rejectEffects) => {
         stateRef.value
           .then(() => {
+            const checkDestroyPromise = () =>
+              destroyPromise ? rejectEffects(destroyPromise) : resolveEffects()
+
             if (isEffectEnvironment) {
-              requestAnimationFrame(() => resolveEffects())
+              requestAnimationFrame(checkDestroyPromise)
             } else {
-              setTimeout(resolveEffects)
+              setTimeout(checkDestroyPromise)
             }
           })
           .catch(rejectEffects)
@@ -73,7 +76,7 @@ export function HookRoot<Props extends object | undefined, HookValue>(
   }
 
   const hookName = hookFunction.name || 'useAnonymousHook'
-  const root: Root<Props, HookValue> = Object.freeze({
+  const hookRoot: Root<Props, HookValue> = Object.freeze({
     displayName: `HookRoot(${hookName})`,
     state: stateRef,
     render,
@@ -81,8 +84,8 @@ export function HookRoot<Props extends object | undefined, HookValue>(
     destroy,
   })
 
-  const hook: ActiveHook = {
-    displayName: hookName,
+  const hook: ActiveHook<Props, HookValue> = {
+    hookRoot,
     // batches all updates in current tick or flush
     requestRender(immediate) {
       if (immediate && !needsRenderImmediately) {
@@ -116,7 +119,7 @@ export function HookRoot<Props extends object | undefined, HookValue>(
   function render(nextProps: Props): Root<Props, HookValue> {
     latestRenderProps = nextProps
     hook.requestRender()
-    return root
+    return hookRoot
   }
 
   /**
@@ -134,6 +137,9 @@ export function HookRoot<Props extends object | undefined, HookValue>(
     }
     if (promisedValue && !promisedValue.isFulfilled) {
       promisedValue.reject(reason)
+    }
+    if (__DEV__ && reason) {
+      console.error(`${hookName} was destroyed due to`, reason)
     }
 
     stateRef.currentValue = undefined
@@ -160,14 +166,15 @@ export function HookRoot<Props extends object | undefined, HookValue>(
   }
 
   function performRender(nextProps?: Props): Root<Props, HookValue> {
-    if (!needsRender) return root
+    if (!needsRender) return hookRoot
     if (stateRef.isDestroyed) {
       __DEV__ && console.warn('can not re-render a Hook, that was destroyed.')
-      return root
+      return hookRoot
     }
 
     const { currentHook: prevHook, currentIndex: prevIndex } = outerHookState
-    outerHookState.currentHook = hook
+
+    outerHookState.currentHook = hook as ActiveHook
     outerHookState.currentIndex = 0
 
     const thisRenderID = (renderId += 1)
@@ -197,10 +204,6 @@ export function HookRoot<Props extends object | undefined, HookValue>(
           .catch(destroy)
       } else {
         destroy(caughtError)
-
-        if (__DEV__) {
-          console.error(caughtError)
-        }
       }
     }
 
@@ -208,7 +211,7 @@ export function HookRoot<Props extends object | undefined, HookValue>(
     outerHookState.currentIndex = prevIndex
 
     if (hadError) {
-      return root
+      return hookRoot
     }
 
     if (needsRenderImmediately) {
@@ -227,7 +230,7 @@ export function HookRoot<Props extends object | undefined, HookValue>(
       if (promisedValue && !promisedValue.isFulfilled) {
         promisedValue.resolve(stateRef.currentValue!)
       }
-      return root
+      return hookRoot
     }
   }
 }

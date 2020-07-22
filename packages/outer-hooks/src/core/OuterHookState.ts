@@ -1,8 +1,10 @@
+import { Root } from '../root/HookRootTypes'
+
 export type Effect = () => void
 export type FlushableRenderFn = () => unknown
 
-export interface ActiveHook {
-  displayName: string
+export interface ActiveHook<Props = unknown, HookValue = unknown> {
+  hookRoot: Root<Props, HookValue>
   requestRender(immediate?: boolean): void
   afterRenderEffects: Set<Effect>
   afterDestroyEffects: Set<Effect>

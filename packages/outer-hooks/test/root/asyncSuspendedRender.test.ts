@@ -50,6 +50,7 @@ describe('HookRoot | async/suspended render', () => {
     expect(hookRoot.state.isSuspended).toEqual(true)
     expect(await hookRoot.state.value).toEqual('Horses are fun!')
     expect(hookRoot.state.isSuspended).toEqual(false)
+    jest.spyOn(console, 'error').mockImplementationOnce(jest.fn())
 
     try {
       hookRoot.update({ animals: 'Spiders' })

@@ -165,12 +165,16 @@ function useInternalEffect(
         destroyEffects.add(() => cancelAnimationFrame(rafId))
       }
 
-      function runEffectAndAddCleanup() {
-        if (typeof cleanupFn.ref.current !== 'undefined') {
-          cleanupFn.ref.current()
+      function runEffectAndAddCleanup(): void {
+        let cleanupFnReturned: void | (() => void)
+        try {
+          if (typeof cleanupFn.ref.current !== 'undefined') {
+            cleanupFn.ref.current()
+          }
+          cleanupFnReturned = effect()
+        } catch (e) {
+          return void activeHook.hookRoot.destroy(e)
         }
-
-        const cleanupFnReturned = effect()
 
         // TODO: only do this when there is actually a function returned
         cleanupFn.ref.current = cleanup
