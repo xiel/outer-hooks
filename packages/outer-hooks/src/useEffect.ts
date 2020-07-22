@@ -139,7 +139,7 @@ function initEffectState(isLayout: boolean) {
 }
 
 function useInternalEffect(
-  effect: () => void | (() => void),
+  effect: () => void | (() => void | unknown),
   deps: Dependencies | undefined,
   isLayout: boolean
 ) {
@@ -159,32 +159,34 @@ function useInternalEffect(
       if (isLayout) {
         runEffectAndAddCleanup()
       } else {
-        // prevent that this is ever called, when destroyed before rAF
-        // TODO: maybe cheaper to just check for destroyed state in runEffect?
-        const rafId = requestAnimationFrame(runEffectAndAddCleanup)
-        destroyEffects.add(() => cancelAnimationFrame(rafId))
+        requestAnimationFrame(runEffectAndAddCleanup)
       }
 
       function runEffectAndAddCleanup(): void {
+        // hook might be destroyed before rAF effects run
+        if (activeHook.hookRoot.state.isDestroyed) {
+          return
+        }
+
         let cleanupFnReturned: void | (() => void)
+
         try {
-          if (typeof cleanupFn.ref.current !== 'undefined') {
+          if (cleanupFn.ref.current) {
             cleanupFn.ref.current()
+            cleanupFn.ref.current = undefined
           }
           cleanupFnReturned = effect()
         } catch (e) {
           return void activeHook.hookRoot.destroy(e)
         }
 
-        // TODO: only do this when there is actually a function returned
-        cleanupFn.ref.current = cleanup
-        destroyEffects.add(cleanup)
-
-        function cleanup() {
-          if (typeof cleanupFnReturned === 'function') {
-            cleanupFnReturned()
+        if (typeof cleanupFnReturned === 'function') {
+          const cleanUp = () => {
+            cleanupFnReturned && cleanupFnReturned()
+            destroyEffects.delete(cleanUp)
           }
-          destroyEffects.delete(cleanup)
+          cleanupFn.ref.current = cleanUp
+          destroyEffects.add(cleanUp)
         }
       }
     }
