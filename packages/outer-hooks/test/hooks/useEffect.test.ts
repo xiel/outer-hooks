@@ -215,6 +215,40 @@ describe('useEffect + useLayoutEffect', () => {
     expect(eachRenderEffectCleanup).toHaveBeenCalledTimes(0)
     expect(hookRoot.state.isDestroyed).toBeTruthy()
   })
+
+  it('should cleanup when error was thrown in effect', async () => {
+    let log: string[] = []
+    let renderId = -1
+    let cleanUp = (l: string) => `${l} -> cleanup`
+    const errorMessage = 'error in effect!'
+
+    const hookRoot = HookRoot(() => {
+      renderId++
+
+      useEffect(() => {
+        const label = `02 | useEffect (r${renderId})`
+        log.push(label)
+
+        if (renderId === 2) {
+          log.push(`-> ${errorMessage}`)
+          throw new Error(errorMessage)
+        }
+
+        return () => log.push(cleanUp(label))
+      })
+
+      useLayoutEffect(() => {
+        const label = `01 | useLayoutEffect (r${renderId})`
+        log.push(label)
+        return () => log.push(cleanUp(label))
+      })
+    })
+
+    expect(await hookRoot.state.effects)
+    expect(log).toMatchInlineSnapshot(`${renderId}`)
+    expect(await hookRoot.update().state.effects)
+    expect(await hookRoot.update().state.effects)
+  })
 })
 
 describe('effects promise', () => {
@@ -244,7 +278,7 @@ describe('effects promise', () => {
     expect(useJestHook).toHaveBeenCalledTimes(1)
   })
 
-  it('should throw after destroy', async () => {
+  it('should reject effects promise after destroy', async () => {
     const useJestHook = jest.fn(() => 'hook value')
     const hookRoot = HookRoot(useJestHook)
 
