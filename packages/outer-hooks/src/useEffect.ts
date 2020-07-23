@@ -101,19 +101,19 @@ function initEffectState(isLayout: boolean) {
     activeHook,
     currentIndex
   ) => {
-    let hooksEffects: ActiveHookEffectRunner
-
-    if (ActiveHookEffectsMap.has(activeHook)) {
-      hooksEffects = ActiveHookEffectsMap.get(activeHook)!
-    } else {
-      hooksEffects = createActiveHookEffectRunner()
-      ActiveHookEffectsMap.set(activeHook, hooksEffects)
-    }
+    // TODO: put effects onto activeHook directly
+    const hooksEffects =
+      ActiveHookEffectsMap.get(activeHook) ||
+      (() => {
+        const hooksEffectsCreated = createActiveHookEffectRunner()
+        ActiveHookEffectsMap.set(activeHook, hooksEffectsCreated)
+        return hooksEffectsCreated
+      })()
 
     const renderEffects = new Set<Effect>()
     const destroyEffects = new Set<Effect>()
-    const lastDeps = createRef<Dependencies | undefined>(undefined)
-    const cleanupFn = createRef<Effect | undefined>(undefined)
+    const lastDeps = createRef<Dependencies>()
+    const cleanupFn = createRef<Effect>()
     const effectsToUse = isLayout ? 'layoutEffects' : 'effects'
 
     hooksEffects.render[effectsToUse][currentIndex] = () => {
