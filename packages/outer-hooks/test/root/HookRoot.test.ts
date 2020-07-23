@@ -33,10 +33,10 @@ describe('HookRoot Interface', () => {
     expect(hookRoot.displayName).toBe('HookRoot(useAnonymousHook)')
   })
 
-  it('initially undefined currentValue (without act render)', () => {
+  it('should render sync', () => {
     const hookRoot = HookRoot(useNameHook, { name: 'Peter' })
-    expect(hookRoot.state.currentValue).toBe(undefined)
-    expect(hookRoot.state.value instanceof Promise).toBe(true)
+    expect(hookRoot.state.currentValue).toMatchInlineSnapshot(`"Peter"`)
+    expect(hookRoot.state.value).toMatchInlineSnapshot(`Promise {}`)
   })
 
   it('can create a hook without props', () => {
@@ -89,9 +89,8 @@ describe('HookRoot Interface', () => {
       jest.useFakeTimers()
 
       const hookRoot = HookRoot((p) => p, { test: 'fake timers' })
-      expect(hookRoot.state.currentValue).toEqual(undefined)
 
-      await nextRenderWithFakeTimers()
+      // first render is sync
       expect(hookRoot.state.currentValue).toEqual({ test: 'fake timers' })
 
       hookRoot.update({ test: 'second render' })

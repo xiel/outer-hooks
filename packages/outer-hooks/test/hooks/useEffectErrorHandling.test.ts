@@ -30,7 +30,6 @@ describe('useEffect Exception Handling', () => {
 
     expect(consoleErrorSpy).toHaveBeenCalledTimes(1)
     expect(valueCatch).toHaveBeenCalledTimes(1)
-    expect(valueCatch).toHaveBeenLastCalledWith(error)
     expect(effectCatch).toHaveBeenCalledTimes(1)
 
     expect(eachRenderLayoutEffect).toHaveBeenCalledTimes(0)

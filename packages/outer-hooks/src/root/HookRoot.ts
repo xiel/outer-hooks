@@ -31,7 +31,7 @@ export function HookRoot<Props extends object | undefined, HookValue>(
 
   // TODO: move props onto state / hookRoot
   let renderId = -1
-  let needsRender = false
+  let needsRender = true
   let needsRenderImmediately = false
   let latestRenderProps: Props
 
@@ -103,14 +103,14 @@ export function HookRoot<Props extends object | undefined, HookValue>(
       if (outerHookState.flushRender) {
         outerHookState.rendersToFlush.add(performRender)
       } else {
-        setTimeout(() => Promise.resolve(undefined).then(performRender))
+        setTimeout(performRender)
       }
     },
     afterRenderEffects: new Set(),
     afterDestroyEffects: new Set(),
   }
 
-  return render(initialProps!)
+  return performRender(initialProps)
 
   /**
    * re-renders the hook in the next tick, with the new set of props

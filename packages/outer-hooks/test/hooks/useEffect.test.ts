@@ -191,7 +191,7 @@ describe('effects promise', () => {
     const hookRoot = HookRoot(useJestHook)
 
     expect(effect).toHaveBeenCalledTimes(0)
-    expect(layoutEffect).toHaveBeenCalledTimes(0)
+    expect(layoutEffect).toHaveBeenCalledTimes(1)
 
     await hookRoot.state.value
 
