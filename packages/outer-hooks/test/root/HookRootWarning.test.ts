@@ -12,6 +12,8 @@ const missingHookRootError = `please wrap your outer hook in a HookRoot`
 
 describe('HookRoot Warning', () => {
   describe('throw error when called without HookRoot', () => {
+    const spy = jest.spyOn(console, 'error').mockImplementation()
+
     test('useCallback', () => {
       const useTestHook = () => useCallback(jest.fn(), [])
       expect(() => useTestHook()).toThrowError(missingHookRootError)
@@ -45,6 +47,10 @@ describe('HookRoot Warning', () => {
     test('useReducer', () => {
       const useTestHook = () => useReducer(jest.fn(), 'initial value')
       expect(() => useTestHook()).toThrowError(missingHookRootError)
+    })
+
+    it('should have called printed to console', () => {
+      expect(spy).toHaveBeenCalledTimes(7)
     })
   })
 })

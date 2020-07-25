@@ -2,6 +2,7 @@ import { EffectState } from '../useEffect'
 import { MemoState } from '../useMemo'
 import { ReducerState } from '../useReducer'
 import { RefState } from '../useRef'
+import { __DEV__ } from './env'
 import { ActiveHook, outerHookState } from './OuterHookState'
 
 export interface HookState {
@@ -22,6 +23,7 @@ export function useInternalStatefulHook<Type extends keyof HookState>(
   initFn: InitHookStateFn<Type>
 ): NonNullable<HookState[Type]> {
   if (!outerHookState.currentHook) {
+    __DEV__ && console.error('please wrap your outer hook in a HookRoot')
     throw new Error('please wrap your outer hook in a HookRoot')
   }
   const { currentHook, currentIndex } = outerHookState
