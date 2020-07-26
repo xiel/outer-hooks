@@ -94,7 +94,7 @@ export function HookRoot<Props extends object | undefined, HookValue>(
       if (needsRender) {
         return
       }
-      if (promisedValue && promisedValue.isFulfilled) {
+      if (promisedValue && promisedValue.isSettled) {
         promisedValue = undefined
       }
       needsRender = true
@@ -135,7 +135,7 @@ export function HookRoot<Props extends object | undefined, HookValue>(
       __DEV__ && console.error('already destroyed')
       return destroyPromise
     }
-    if (promisedValue && !promisedValue.isFulfilled) {
+    if (promisedValue && !promisedValue.isSettled) {
       promisedValue.reject(reason)
     }
     if (__DEV__ && reason) {
@@ -215,7 +215,7 @@ export function HookRoot<Props extends object | undefined, HookValue>(
     }
 
     if (needsRenderImmediately) {
-      if (promisedValue && promisedValue.isFulfilled) {
+      if (promisedValue && promisedValue.isSettled) {
         promisedValue = undefined
       }
       needsRender = true
@@ -227,7 +227,7 @@ export function HookRoot<Props extends object | undefined, HookValue>(
       if (onUpdate) {
         onUpdate(stateRef.currentValue!)
       }
-      if (promisedValue && !promisedValue.isFulfilled) {
+      if (promisedValue && !promisedValue.isSettled) {
         promisedValue.resolve(stateRef.currentValue!)
       }
       return hookRoot
