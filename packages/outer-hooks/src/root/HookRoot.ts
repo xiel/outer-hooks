@@ -191,17 +191,19 @@ export function HookRoot<Props extends object | undefined, HookValue>(
 
       hook.afterRenderEffects.forEach((e) => e())
       hook.afterRenderEffects.clear()
-    } catch (caughtError) {
+    } catch (e) {
+      let caughtError: Error | PromiseLike<unknown> = e
       hadError = true
 
       if (
-        caughtError instanceof Promise ||
-        (caughtError && typeof caughtError.then === 'function')
+        (caughtError && caughtError instanceof Promise) ||
+        ('then' in caughtError && typeof caughtError.then === 'function')
       ) {
         stateRef.isSuspended = true
-        caughtError
-          .then(() => renderId === thisRenderID && performRender(nextProps))
-          .catch(destroy)
+        caughtError.then(
+          () => renderId === thisRenderID && performRender(nextProps),
+          destroy
+        )
       } else {
         destroy(caughtError)
       }
