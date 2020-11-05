@@ -24,7 +24,7 @@
   "dependencies": {},
   "devDependencies": {
     "@testing-library/react": "^10.0.2",
-    "@types/jest": "^26.0.5",
+    "@types/jest": "^26.0.15",
     "bundlewatch": "^0.2.6",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-react": "^7.21.5",
