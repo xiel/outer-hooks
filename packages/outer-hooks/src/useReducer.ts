@@ -16,7 +16,7 @@ export function useReducer<State, Action>(
 export function useReducer<State, Action, InitialArg>(
   reducer: ReducerFn<State, Action>,
   initialArg: InitialArg,
-  initStateFn: (initialArg: InitialArg) => State
+  initStateFn: (initArg: InitialArg) => State
 ): [State, Dispatch<Action>]
 
 export function useReducer<State, Action, InitialArg>(
