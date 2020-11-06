@@ -3,13 +3,14 @@ import { Dispatch, useReducer } from './useReducer'
 
 function stateReducer<S>(prevState: S, action: SetStateAction<S>): S {
   if (action && typeof action === 'function') {
-    return (action as (prevState: S) => S)(prevState)
+    return (action as SetStateFromCurrentStateAction<S>)(prevState)
   }
   return action
 }
 
 export type LazyValueFn<S> = () => S
-export type SetStateAction<S> = S | ((prevState: S) => S)
+export type SetStateFromCurrentStateAction<S> = (prevState: S) => S
+export type SetStateAction<S> = S | SetStateFromCurrentStateAction<S>
 
 export function useState<S>(
   initialState: S | LazyValueFn<S>
