@@ -1,7 +1,7 @@
 import { __DEV__, isEffectEnvironment } from '../core/env'
 import { ActiveHook, outerHookState } from '../core/OuterHookState'
 import { createPromisedValue, PromisedValue } from '../core/promisedValue'
-import { Root, State } from './HookRootTypes'
+import { Root, State, Subscription } from './HookRootTypes'
 
 type OnUpdateFn<HookValue> = (nextValue: HookValue) => void
 
@@ -38,6 +38,7 @@ export function HookRoot<Props extends object | undefined, HookValue>(
   let valueFresh = false
   let promisedValue: PromisedValue<HookValue> | undefined
   let destroyPromise: Promise<void> | undefined
+  const subscriptions = new Set<Subscription<HookValue>>()
 
   const stateRef: State<HookValue> = {
     isSuspended: false,
@@ -82,6 +83,8 @@ export function HookRoot<Props extends object | undefined, HookValue>(
     render,
     update,
     destroy,
+    subscribe,
+    unsubscribe,
   })
 
   const hook: ActiveHook<Props, HookValue> = {
@@ -103,6 +106,7 @@ export function HookRoot<Props extends object | undefined, HookValue>(
       if (outerHookState.flushRender) {
         outerHookState.rendersToFlush.add(performRender)
       } else {
+        // TODO: this might need to be a microtask when immediate
         setTimeout(performRender)
       }
     },
@@ -128,6 +132,18 @@ export function HookRoot<Props extends object | undefined, HookValue>(
    */
   function update(nextProps?: Partial<Props>): Root<Props, HookValue> {
     return render({ ...latestRenderProps, ...nextProps })
+  }
+
+  function subscribe(subscription: Subscription<HookValue>) {
+    subscriptions.add(subscription)
+    return () => unsubscribe(subscription)
+  }
+
+  function unsubscribe(subscription: Subscription<HookValue>) {
+    if (__DEV__ && !subscriptions.has(subscription)) {
+      console.error('subscription unknown')
+    }
+    subscriptions.delete(subscription)
   }
 
   function destroy(reason?: unknown) {
@@ -226,6 +242,10 @@ export function HookRoot<Props extends object | undefined, HookValue>(
 
       return performRender()
     } else {
+      subscriptions.forEach((subscription) =>
+        subscription(stateRef.currentValue!)
+      )
+
       if (onUpdate) {
         onUpdate(stateRef.currentValue!)
       }
