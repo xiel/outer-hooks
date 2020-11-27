@@ -23,6 +23,8 @@ describe('HookRoot Interface', () => {
           "isSuspended": false,
           "value": Promise {},
         },
+        "subscribe": [Function],
+        "unsubscribe": [Function],
         "update": [Function],
       }
     `)
