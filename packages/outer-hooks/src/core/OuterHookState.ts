@@ -23,3 +23,5 @@ export const outerHookState: OuterHookState = {
   flushRender: false,
   rendersToFlush: new Set(),
 }
+
+export const callEffect = (effect: Effect) => effect()

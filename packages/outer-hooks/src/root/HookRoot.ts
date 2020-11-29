@@ -1,5 +1,5 @@
 import { __DEV__, isEffectEnvironment } from '../core/env'
-import { ActiveHook, outerHookState } from '../core/OuterHookState'
+import { ActiveHook, callEffect, outerHookState } from '../core/OuterHookState'
 import { createPromisedValue, PromisedValue } from '../core/promisedValue'
 import { Root, State, Subscription } from './HookRootTypes'
 
@@ -94,9 +94,6 @@ export function HookRoot<Props extends object | undefined, HookValue>(
       if (immediate && !needsRenderImmediately) {
         needsRenderImmediately = true
       }
-      if (needsRender) {
-        return
-      }
       if (promisedValue && promisedValue.isSettled) {
         promisedValue = undefined
       }
@@ -105,8 +102,9 @@ export function HookRoot<Props extends object | undefined, HookValue>(
 
       if (outerHookState.flushRender) {
         outerHookState.rendersToFlush.add(performRender)
+      } else if (immediate) {
+        Promise.resolve(void 0).then(performRender)
       } else {
-        // TODO: this might need to be a microtask when immediate
         setTimeout(performRender)
       }
     },
@@ -163,13 +161,13 @@ export function HookRoot<Props extends object | undefined, HookValue>(
     promisedValue = undefined
     destroyPromise = new Promise<void>((resolve) => {
       // flush all already existing destroy effects (also clears still pending effects)
-      hook.afterDestroyEffects.forEach((e) => e())
+      hook.afterDestroyEffects.forEach(callEffect)
       hook.afterDestroyEffects.clear()
 
       if (isEffectEnvironment) {
         // again flush destroy effects after animation frame (eg. non-layout effects cleanups)
         requestAnimationFrame(() => {
-          hook.afterDestroyEffects.forEach((e) => e())
+          hook.afterDestroyEffects.forEach(callEffect)
           hook.afterDestroyEffects.clear()
           resolve()
         })
@@ -198,24 +196,29 @@ export function HookRoot<Props extends object | undefined, HookValue>(
     let hadError = false
 
     try {
+      needsRender = false
+      needsRenderImmediately = false
+
       stateRef.currentValue = hookFunction(renderProps)
       stateRef.isSuspended = false
 
-      needsRender = false
       valueFresh = true
       latestRenderProps = renderProps
 
-      hook.afterRenderEffects.forEach((e) => e())
+      hook.afterRenderEffects.forEach(callEffect)
       hook.afterRenderEffects.clear()
     } catch (e) {
       let caughtError: Error | PromiseLike<unknown> = e
+
       hadError = true
 
       if (
         (caughtError && caughtError instanceof Promise) ||
         ('then' in caughtError && typeof caughtError.then === 'function')
       ) {
+        needsRender = true
         stateRef.isSuspended = true
+
         caughtError.then(
           () => renderId === thisRenderID && performRender(nextProps),
           destroy

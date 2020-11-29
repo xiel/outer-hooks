@@ -1,6 +1,6 @@
 import { depsRequireUpdate } from './core/areDepsEqual'
 import { isEffectEnvironment } from './core/env'
-import { ActiveHook, Effect } from './core/OuterHookState'
+import { ActiveHook, callEffect, Effect } from './core/OuterHookState'
 import { createRef, RefObject } from './core/refObject'
 import { Dependencies } from './core/sharedTypes'
 import {
@@ -61,8 +61,6 @@ export type EffectState = [
   LastDeps,
   CleanUpFn
 ]
-
-const callEffect = (effect: Effect) => effect()
 
 function createHookEffects(): HookEffects {
   const effects: Effect[] = []
