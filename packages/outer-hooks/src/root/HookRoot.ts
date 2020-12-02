@@ -103,8 +103,9 @@ export function HookRoot<Props extends object | undefined, HookValue>(
       if (outerHookState.flushRender) {
         outerHookState.rendersToFlush.add(performRender)
       } else if (immediate) {
-        Promise.resolve(void 0).then(performRender)
+        Promise.resolve(undefined).then(performRender)
       } else {
+        console.log('slow perform render requested...')
         setTimeout(performRender)
       }
     },
