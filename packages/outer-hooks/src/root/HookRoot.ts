@@ -3,32 +3,19 @@ import { ActiveHook, callEffect, outerHookState } from '../core/OuterHookState'
 import { createPromisedValue, PromisedValue } from '../core/promisedValue'
 import { Root, State, Subscription } from './HookRootTypes'
 
-type OnUpdateFn<HookValue> = (nextValue: HookValue) => void
-
-export function HookRoot<Props extends object | undefined, HookValue>(
+export function HookRoot<Props extends Record<string, unknown>, HookValue>(
   hookFunction: (props: Props) => HookValue,
-  initialProps: Props,
-  onUpdate?: OnUpdateFn<HookValue>
+  initialProps: Props
 ): Root<Props, HookValue>
 
-export function HookRoot<Props extends undefined, HookValue>(
-  hookFunction: (props?: Props) => HookValue,
-  onUpdate?: OnUpdateFn<HookValue>
+export function HookRoot<Props extends never, HookValue>(
+  hookFunction: (props?: Props) => HookValue
 ): Root<Props, HookValue>
 
-export function HookRoot<Props extends object | undefined, HookValue>(
+export function HookRoot<Props extends Record<string, unknown>, HookValue>(
   hookFunction: (props: Props) => HookValue,
-  initialPropsOrOnUpdate?: Props | OnUpdateFn<HookValue>,
-  onUpdate?: OnUpdateFn<HookValue>
+  initialProps?: Props
 ): Root<Props, HookValue> {
-  let initialProps: Props | undefined = undefined
-
-  if (typeof initialPropsOrOnUpdate === 'function') {
-    onUpdate = initialPropsOrOnUpdate as OnUpdateFn<HookValue>
-  } else {
-    initialProps = initialPropsOrOnUpdate as Props
-  }
-
   // TODO: move props onto state / hookRoot
   let renderId = -1
   let needsRender = true
@@ -244,14 +231,12 @@ export function HookRoot<Props extends object | undefined, HookValue>(
       updateRenderStatesBeforePerformRender()
       return performRender()
     } else {
-      subscriptions.forEach((subscription) =>
-        subscription(stateRef.currentValue!)
-      )
+      const currentValue = stateRef.currentValue!
 
-      // TODO: remove onUpdate function
-      if (onUpdate) {
-        onUpdate(stateRef.currentValue!)
-      }
+      Promise.resolve().then(() => {
+        subscriptions.forEach((subscription) => subscription(currentValue))
+      })
+
       if (promisedValue && !promisedValue.isSettled) {
         promisedValue.resolve(stateRef.currentValue!)
       }

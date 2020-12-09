@@ -101,42 +101,6 @@ describe('HookRoot Interface', () => {
       expect(hookRoot.state.currentValue).toEqual({ test: 'second render' })
     })
   })
-
-  it('should call onUpdate func after render (no props)', async () => {
-    let renderId = -1
-    const onUpdateFn = jest.fn()
-    const hookRoot = HookRoot(() => {
-      renderId++
-      return `value: ${renderId}`
-    }, onUpdateFn)
-
-    await hookRoot.state.value
-    expect(onUpdateFn).toHaveBeenCalledTimes(1)
-    expect(onUpdateFn).toHaveBeenLastCalledWith('value: 0')
-    await hookRoot.update().state.value
-    expect(onUpdateFn).toHaveBeenCalledTimes(2)
-    expect(onUpdateFn).toHaveBeenLastCalledWith('value: 1')
-  })
-
-  it('should call onUpdate func after render (empty props)', async () => {
-    let renderId = -1
-    const onUpdateFn = jest.fn()
-    const hookRoot = HookRoot(
-      () => {
-        renderId++
-        return `value: ${renderId}`
-      },
-      {},
-      onUpdateFn
-    )
-
-    await hookRoot.state.value
-    expect(onUpdateFn).toHaveBeenCalledTimes(1)
-    expect(onUpdateFn).toHaveBeenLastCalledWith('value: 0')
-    await hookRoot.update().state.value
-    expect(onUpdateFn).toHaveBeenCalledTimes(2)
-    expect(onUpdateFn).toHaveBeenLastCalledWith('value: 1')
-  })
 })
 
 describe('act', () => {
