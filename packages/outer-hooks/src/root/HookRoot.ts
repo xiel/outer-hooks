@@ -89,24 +89,19 @@ export function HookRoot<Props extends object | undefined, HookValue>(
 
   const hook: ActiveHook<Props, HookValue> = {
     hookRoot,
-    // batches all updates in current tick or flush
+    // batches all updates in next microtask
     requestRender(immediate) {
-      if (immediate && !needsRenderImmediately) {
+      if (immediate) {
         needsRenderImmediately = true
       }
-      if (promisedValue && promisedValue.isSettled) {
-        promisedValue = undefined
-      }
-      needsRender = true
-      valueFresh = false
+
+      updateRenderStatesBeforePerformRender()
 
       if (outerHookState.flushRender) {
         outerHookState.rendersToFlush.add(performRender)
-      } else if (immediate) {
-        Promise.resolve(undefined).then(performRender)
       } else {
-        console.log('slow perform render requested...')
-        setTimeout(performRender)
+        // batch all updates into next micro task execution
+        Promise.resolve(undefined).then(performRender)
       }
     },
     afterRenderEffects: new Set(),
@@ -180,6 +175,14 @@ export function HookRoot<Props extends object | undefined, HookValue>(
     return destroyPromise
   }
 
+  function updateRenderStatesBeforePerformRender() {
+    if (promisedValue && promisedValue.isSettled) {
+      promisedValue = undefined
+    }
+    needsRender = true
+    valueFresh = false
+  }
+
   function performRender(nextProps?: Props): Root<Props, HookValue> {
     if (!needsRender) return hookRoot
     if (stateRef.isDestroyed) {
@@ -236,20 +239,16 @@ export function HookRoot<Props extends object | undefined, HookValue>(
       return hookRoot
     }
 
+    // state updates are triggered from render will be rendered in sync
     if (needsRenderImmediately) {
-      if (promisedValue && promisedValue.isSettled) {
-        promisedValue = undefined
-      }
-      needsRender = true
-      valueFresh = false
-      needsRenderImmediately = false
-
+      updateRenderStatesBeforePerformRender()
       return performRender()
     } else {
       subscriptions.forEach((subscription) =>
         subscription(stateRef.currentValue!)
       )
 
+      // TODO: remove onUpdate function
       if (onUpdate) {
         onUpdate(stateRef.currentValue!)
       }

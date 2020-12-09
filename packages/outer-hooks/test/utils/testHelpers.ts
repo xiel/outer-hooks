@@ -4,3 +4,5 @@ export const nextRenderWithFakeTimers = async () => {
   jest.runOnlyPendingTimers()
   await nextTick()
 }
+
+export const nextMicrotask = () => Promise.resolve()

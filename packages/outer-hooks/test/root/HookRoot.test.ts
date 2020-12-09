@@ -1,5 +1,5 @@
 import { act, HookRoot } from '../../src'
-import { nextRenderWithFakeTimers } from '../utils/testHelpers'
+import { nextMicrotask } from '../utils/testHelpers'
 
 const usePropReturningHook = <P>(props: P) => props
 const useNameHook = ({ name }: { name: string }) => {
@@ -86,20 +86,19 @@ describe('HookRoot Interface', () => {
     })
   })
 
-  describe('updated values after tick, without act, using fake timers', () => {
-    it('should update value after advancing timers', async () => {
-      jest.useFakeTimers()
-
+  describe('currentValue is updated after microtask (without act)', () => {
+    it('should update value only after next microtask execution', async () => {
       const hookRoot = HookRoot((p) => p, { test: 'fake timers' })
 
       // first render is sync
       expect(hookRoot.state.currentValue).toEqual({ test: 'fake timers' })
 
       hookRoot.update({ test: 'second render' })
-      await nextRenderWithFakeTimers()
-      expect(hookRoot.state.currentValue).toEqual({ test: 'second render' })
 
-      jest.useRealTimers()
+      // should still return previous value, because updates are batched
+      expect(hookRoot.state.currentValue).toEqual({ test: 'fake timers' })
+      await nextMicrotask()
+      expect(hookRoot.state.currentValue).toEqual({ test: 'second render' })
     })
   })
 
