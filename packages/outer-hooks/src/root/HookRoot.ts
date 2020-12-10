@@ -3,16 +3,16 @@ import { ActiveHook, callEffect, outerHookState } from '../core/OuterHookState'
 import { createPromisedValue, PromisedValue } from '../core/promisedValue'
 import { Root, Subscription } from './HookRootTypes'
 
-export function HookRoot<Props extends Record<string, unknown>, HookValue>(
+export function HookRoot<Props extends {} | undefined, HookValue>(
   hookFunction: (props: Props) => HookValue,
   initialProps: Props
 ): Root<Props, HookValue>
 
-export function HookRoot<Props extends never, HookValue>(
+export function HookRoot<Props extends {} | undefined, HookValue>(
   hookFunction: (props?: Props) => HookValue
 ): Root<Props, HookValue>
 
-export function HookRoot<Props extends Record<string, unknown>, HookValue>(
+export function HookRoot<Props extends {}, HookValue>(
   hookFunction: (props: Props) => HookValue,
   initialProps?: Props
 ): Root<Props, HookValue> {
