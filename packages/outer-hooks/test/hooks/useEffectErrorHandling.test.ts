@@ -23,10 +23,10 @@ describe('useEffect Exception Handling', () => {
 
     const effectCatch = jest.fn()
     const valueCatch = jest.fn()
-    await hookRoot.state.value.catch(valueCatch)
-    await hookRoot.state.effects.catch(effectCatch)
+    await hookRoot.value.catch(valueCatch)
+    await hookRoot.effects.catch(effectCatch)
 
-    expect(hookRoot.state.isDestroyed).toBeTruthy()
+    expect(hookRoot.isDestroyed).toBeTruthy()
 
     expect(consoleErrorSpy).toHaveBeenCalledTimes(1)
     expect(valueCatch).toHaveBeenCalledTimes(1)
@@ -79,7 +79,7 @@ describe('useEffect Exception Handling', () => {
       })
     })
 
-    expect(await hookRoot.state.effects)
+    expect(await hookRoot.effects)
     expect(log).toMatchInlineSnapshot(`
       Array [
         "01 | useLayoutEffect (r0)",
@@ -90,7 +90,7 @@ describe('useEffect Exception Handling', () => {
     `)
 
     log = []
-    expect(await hookRoot.update().state.effects)
+    expect(await hookRoot.update().effects)
     expect(log).toMatchInlineSnapshot(`
       Array [
         "01 | useLayoutEffect (r0) -> cleanup",
@@ -106,7 +106,7 @@ describe('useEffect Exception Handling', () => {
 
     log = []
     const effectCatch = jest.fn()
-    expect(await hookRoot.update().state.effects.catch(effectCatch))
+    expect(await hookRoot.update().effects.catch(effectCatch))
     expect(effectCatch).toHaveBeenCalledTimes(1)
     expect(log).toMatchInlineSnapshot(`
       Array [
@@ -122,8 +122,8 @@ describe('useEffect Exception Handling', () => {
       ]
     `)
 
-    expect(hookRoot.state.isSuspended).toBe(false)
-    expect(hookRoot.state.isDestroyed).toBe(true)
+    expect(hookRoot.isSuspended).toBe(false)
+    expect(hookRoot.isDestroyed).toBe(true)
   })
 
   it('should cleanup when error was thrown in useLayoutEffect', async () => {
@@ -161,7 +161,7 @@ describe('useEffect Exception Handling', () => {
       })
     })
 
-    expect(await hookRoot.state.effects)
+    expect(await hookRoot.effects)
     expect(log).toMatchInlineSnapshot(`
       Array [
         "01 | useLayoutEffect (r0)",
@@ -171,7 +171,7 @@ describe('useEffect Exception Handling', () => {
     `)
 
     log = []
-    expect(await hookRoot.update().state.effects)
+    expect(await hookRoot.update().effects)
     expect(log).toMatchInlineSnapshot(`
       Array [
         "01 | useLayoutEffect (r0) -> cleanup",
@@ -185,7 +185,7 @@ describe('useEffect Exception Handling', () => {
 
     log = []
     const effectCatch = jest.fn()
-    await hookRoot.update().state.effects.catch(effectCatch)
+    await hookRoot.update().effects.catch(effectCatch)
     expect(effectCatch).toHaveBeenCalledTimes(1)
     expect(effectCatch.mock.calls[0]).toMatchInlineSnapshot(`
       Array [
@@ -203,7 +203,7 @@ describe('useEffect Exception Handling', () => {
       ]
     `)
 
-    expect(hookRoot.state.isSuspended).toBe(false)
-    expect(hookRoot.state.isDestroyed).toBe(true)
+    expect(hookRoot.isSuspended).toBe(false)
+    expect(hookRoot.isDestroyed).toBe(true)
   })
 })

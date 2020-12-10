@@ -13,7 +13,7 @@ describe('useMemo', () => {
       { a: 1 }
     )
 
-    expect(await hookRoot.state.value).toEqual({
+    expect(await hookRoot.value).toEqual({
       aMemoProp: '1',
     })
     expect(valueFactory).toHaveBeenCalledTimes(1)
@@ -21,7 +21,7 @@ describe('useMemo', () => {
     hookRoot.update({ a: 1 })
     hookRoot.render({ a: 1 })
 
-    expect(await hookRoot.state.value).toEqual({
+    expect(await hookRoot.value).toEqual({
       aMemoProp: '1',
     })
     expect(valueFactory).toHaveBeenCalledTimes(1)
@@ -29,7 +29,7 @@ describe('useMemo', () => {
     hookRoot.render({ a: 2 })
     hookRoot.render({ a: 2 })
 
-    expect(await hookRoot.state.value).toEqual({
+    expect(await hookRoot.value).toEqual({
       aMemoProp: '2',
     })
     expect(valueFactory).toHaveBeenCalledTimes(2)
@@ -57,11 +57,11 @@ describe('useMemo', () => {
       { out: 'outputProp' }
     )
 
-    expect(await memTest1.state.value).toEqual({ outputProp: 'abc' })
-    expect(await memTest2.state.value).toEqual({ outputProp: 'def' })
+    expect(await memTest1.value).toEqual({ outputProp: 'abc' })
+    expect(await memTest2.value).toEqual({ outputProp: 'def' })
     memTest1.update()
     memTest2.update()
-    expect(await memTest1.state.value).toEqual({ outputProp: 'abc' })
-    expect(await memTest2.state.value).toEqual({ outputProp: 'def' })
+    expect(await memTest1.value).toEqual({ outputProp: 'abc' })
+    expect(await memTest2.value).toEqual({ outputProp: 'def' })
   })
 })

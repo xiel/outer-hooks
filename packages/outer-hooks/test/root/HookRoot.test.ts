@@ -13,19 +13,17 @@ describe('HookRoot Interface', () => {
 
     expect(hookRoot).toMatchInlineSnapshot(`
       Object {
+        "currentValue": "hook value",
         "destroy": [Function],
         "displayName": "HookRoot(useNamedHook)",
+        "effects": Promise {},
+        "isDestroyed": false,
+        "isSuspended": false,
         "render": [Function],
-        "state": Object {
-          "currentValue": "hook value",
-          "effects": Promise {},
-          "isDestroyed": false,
-          "isSuspended": false,
-          "value": Promise {},
-        },
         "subscribe": [Function],
         "unsubscribe": [Function],
         "update": [Function],
+        "value": Promise {},
       }
     `)
   })
@@ -37,12 +35,12 @@ describe('HookRoot Interface', () => {
 
   it('should render sync', () => {
     const hookRoot = HookRoot(useNameHook, { name: 'Peter' })
-    expect(hookRoot.state.currentValue).toMatchInlineSnapshot(`"Peter"`)
-    expect(hookRoot.state.value).toMatchInlineSnapshot(`Promise {}`)
+    expect(hookRoot.currentValue).toMatchInlineSnapshot(`"Peter"`)
+    expect(hookRoot.value).toMatchInlineSnapshot(`Promise {}`)
   })
 
   it('can create a hook without props', () => {
-    expect(act(() => HookRoot(() => 42)).state.currentValue).toEqual(42)
+    expect(act(() => HookRoot(() => 42)).currentValue).toEqual(42)
   })
 
   it('can create a hook with optional props', () => {
@@ -51,18 +49,17 @@ describe('HookRoot Interface', () => {
       return name
     }
 
-    expect(act(() => HookRoot(useOptionalNameHook)).state.currentValue).toBe(
+    expect(act(() => HookRoot(useOptionalNameHook)).currentValue).toBe(
       'No Name'
     )
     expect(
-      act(() => HookRoot(useOptionalNameHook, { name: 'Max' })).state
-        .currentValue
+      act(() => HookRoot(useOptionalNameHook, { name: 'Max' })).currentValue
     ).toBe('Max')
   })
 
   it('can create a hook inline with props', () => {
     const hookRoot = act(() => HookRoot(({ n }: { n: number }) => n, { n: 42 }))
-    expect(hookRoot.state.currentValue).toEqual(42)
+    expect(hookRoot.currentValue).toEqual(42)
   })
 
   describe('sync renders using act', () => {
@@ -71,18 +68,18 @@ describe('HookRoot Interface', () => {
     const hookRoot = act(() => HookRoot(usePropReturningHook, initialProps))
 
     it('should update value synchronous with act', () => {
-      expect(hookRoot.state.currentValue).toEqual(initialProps)
+      expect(hookRoot.currentValue).toEqual(initialProps)
 
       act(() => hookRoot.update({ letter: 'b' }))
-      expect(hookRoot.state.currentValue).toEqual({ letter: 'b' })
+      expect(hookRoot.currentValue).toEqual({ letter: 'b' })
 
       act(() => hookRoot.render({ letter: 'c' }))
-      expect(hookRoot.state.currentValue).toEqual({ letter: 'c' })
+      expect(hookRoot.currentValue).toEqual({ letter: 'c' })
     })
 
     it('should not update synchronous without act', () => {
       hookRoot.update({ letter: 'this will not be applied sync' })
-      expect(hookRoot.state.currentValue).toEqual({ letter: 'c' })
+      expect(hookRoot.currentValue).toEqual({ letter: 'c' })
     })
   })
 
@@ -91,14 +88,14 @@ describe('HookRoot Interface', () => {
       const hookRoot = HookRoot((p) => p, { test: 'fake timers' })
 
       // first render is sync
-      expect(hookRoot.state.currentValue).toEqual({ test: 'fake timers' })
+      expect(hookRoot.currentValue).toEqual({ test: 'fake timers' })
 
       hookRoot.update({ test: 'second render' })
 
       // should still return previous value, because updates are batched
-      expect(hookRoot.state.currentValue).toEqual({ test: 'fake timers' })
+      expect(hookRoot.currentValue).toEqual({ test: 'fake timers' })
       await nextMicrotask()
-      expect(hookRoot.state.currentValue).toEqual({ test: 'second render' })
+      expect(hookRoot.currentValue).toEqual({ test: 'second render' })
     })
   })
 })

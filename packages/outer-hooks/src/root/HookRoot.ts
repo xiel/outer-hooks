@@ -1,7 +1,7 @@
 import { __DEV__, isEffectEnvironment } from '../core/env'
 import { ActiveHook, callEffect, outerHookState } from '../core/OuterHookState'
 import { createPromisedValue, PromisedValue } from '../core/promisedValue'
-import { Root, State, Subscription } from './HookRootTypes'
+import { Root, Subscription } from './HookRootTypes'
 
 export function HookRoot<Props extends Record<string, unknown>, HookValue>(
   hookFunction: (props: Props) => HookValue,
@@ -21,24 +21,31 @@ export function HookRoot<Props extends Record<string, unknown>, HookValue>(
   let needsRender = true
   let needsRenderImmediately = false
   let latestRenderProps: Props
-
+  let isSuspended = false
   let valueFresh = false
+  let currentValue: HookValue | undefined = undefined
   let promisedValue: PromisedValue<HookValue> | undefined
   let destroyPromise: Promise<void> | undefined
   const subscriptions = new Set<Subscription<HookValue>>()
 
-  const stateRef: State<HookValue> = {
-    isSuspended: false,
+  const hookName = hookFunction.name || 'useAnonymousHook'
+  const hookRoot: Root<Props, HookValue> = Object.freeze({
+    displayName: `HookRoot(${hookName})`,
+    get isSuspended() {
+      return isSuspended
+    },
+    get currentValue() {
+      return currentValue
+    },
     get isDestroyed() {
       return Boolean(destroyPromise)
     },
-    currentValue: undefined,
     get value() {
       if (valueFresh) {
-        return Promise.resolve(stateRef.currentValue!)
+        return Promise.resolve(currentValue!)
       }
       if (!promisedValue) {
-        if (stateRef.isDestroyed) {
+        if (hookRoot.isDestroyed) {
           return Promise.reject('not available | hookRoot is destroyed')
         }
         promisedValue = createPromisedValue<HookValue>()
@@ -47,7 +54,7 @@ export function HookRoot<Props extends Record<string, unknown>, HookValue>(
     },
     get effects() {
       return new Promise<void>((resolveEffects, rejectEffects) => {
-        stateRef.value
+        hookRoot.value
           .then(() => {
             const checkDestroyPromise = () =>
               destroyPromise ? rejectEffects(destroyPromise) : resolveEffects()
@@ -61,12 +68,6 @@ export function HookRoot<Props extends Record<string, unknown>, HookValue>(
           .catch(rejectEffects)
       })
     },
-  }
-
-  const hookName = hookFunction.name || 'useAnonymousHook'
-  const hookRoot: Root<Props, HookValue> = Object.freeze({
-    displayName: `HookRoot(${hookName})`,
-    state: stateRef,
     render,
     update,
     destroy,
@@ -139,7 +140,7 @@ export function HookRoot<Props extends Record<string, unknown>, HookValue>(
       console.error(`${hookName} was destroyed due to`, reason)
     }
 
-    stateRef.currentValue = undefined
+    currentValue = undefined
     valueFresh = false
     promisedValue = undefined
     destroyPromise = new Promise<void>((resolve) => {
@@ -172,7 +173,7 @@ export function HookRoot<Props extends Record<string, unknown>, HookValue>(
 
   function performRender(nextProps?: Props): Root<Props, HookValue> {
     if (!needsRender) return hookRoot
-    if (stateRef.isDestroyed) {
+    if (hookRoot.isDestroyed) {
       __DEV__ && console.warn('can not re-render a Hook, that was destroyed.')
       return hookRoot
     }
@@ -190,8 +191,8 @@ export function HookRoot<Props extends Record<string, unknown>, HookValue>(
       needsRender = false
       needsRenderImmediately = false
 
-      stateRef.currentValue = hookFunction(renderProps)
-      stateRef.isSuspended = false
+      currentValue = hookFunction(renderProps)
+      isSuspended = false
 
       valueFresh = true
       latestRenderProps = renderProps
@@ -208,7 +209,7 @@ export function HookRoot<Props extends Record<string, unknown>, HookValue>(
         ('then' in caughtError && typeof caughtError.then === 'function')
       ) {
         needsRender = true
-        stateRef.isSuspended = true
+        isSuspended = true
 
         caughtError.then(
           () => renderId === thisRenderID && performRender(nextProps),
@@ -231,14 +232,13 @@ export function HookRoot<Props extends Record<string, unknown>, HookValue>(
       updateRenderStatesBeforePerformRender()
       return performRender()
     } else {
-      const currentValue = stateRef.currentValue!
-
+      const freshValue = currentValue!
       Promise.resolve().then(() => {
-        subscriptions.forEach((subscription) => subscription(currentValue))
+        subscriptions.forEach((subscription) => subscription(freshValue))
       })
 
       if (promisedValue && !promisedValue.isSettled) {
-        promisedValue.resolve(stateRef.currentValue!)
+        promisedValue.resolve(currentValue!)
       }
       return hookRoot
     }

@@ -11,10 +11,10 @@ describe('subscriptions', () => {
 
     hookRoot.subscribe(onUpdateFn)
 
-    expect(await hookRoot.state.value).toEqual('value: 0')
+    expect(await hookRoot.value).toEqual('value: 0')
     expect(onUpdateFn).toHaveBeenCalledTimes(1)
     expect(onUpdateFn).toHaveBeenLastCalledWith('value: 0')
-    await hookRoot.update().state.value
+    await hookRoot.update().value
     expect(onUpdateFn).toHaveBeenCalledTimes(2)
     expect(onUpdateFn).toHaveBeenLastCalledWith('value: 1')
   })
@@ -29,10 +29,10 @@ describe('subscriptions', () => {
 
     hookRoot.subscribe(onUpdateFn)
 
-    await hookRoot.state.value
+    await hookRoot.value
     expect(onUpdateFn).toHaveBeenCalledTimes(1)
     expect(onUpdateFn).toHaveBeenLastCalledWith('value: 0')
-    await hookRoot.update().state.value
+    await hookRoot.update().value
     expect(onUpdateFn).toHaveBeenCalledTimes(2)
     expect(onUpdateFn).toHaveBeenLastCalledWith('value: 1')
   })

@@ -87,12 +87,12 @@ describe('HookRoot Nesting', () => {
       }
     }
 
-    const hootRoot = HookRoot(useHook)
-    await hootRoot.state.effects
-    const { nestedHook, ...value } = await hootRoot.state.value
+    const hookRoot = HookRoot(useHook)
+    await hookRoot.effects
+    const { nestedHook, ...value } = await hookRoot.value
 
     // assert that no hook values are getting messed up
-    expect(hootRoot.state.isDestroyed).toBe(false)
+    expect(hookRoot.isDestroyed).toBe(false)
 
     expect(value).toMatchInlineSnapshot(`
       Object {
@@ -107,8 +107,8 @@ describe('HookRoot Nesting', () => {
       }
     `)
 
-    expect(nestedHook.state.isDestroyed).toBe(false)
-    expect(await nestedHook.state.value).toMatchInlineSnapshot(`
+    expect(nestedHook.isDestroyed).toBe(false)
+    expect(await nestedHook.value).toMatchInlineSnapshot(`
       Object {
         "anotherRef": Object {
           "current": "nested 2 I I I",
@@ -160,9 +160,9 @@ describe('HookRoot Nesting', () => {
       }
     })
 
-    await hookRoot.state.effects
-    await hookRoot.state.value
-    expect(hookRoot.state.currentValue).toMatchInlineSnapshot(`
+    await hookRoot.effects
+    await hookRoot.value
+    expect(hookRoot.currentValue).toMatchInlineSnapshot(`
       Object {
         "count": 1,
         "count2": 1,

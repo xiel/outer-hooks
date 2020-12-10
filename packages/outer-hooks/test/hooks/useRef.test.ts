@@ -6,14 +6,14 @@ describe('useRef', () => {
       return useRef('initial value')
     })
 
-    let refValue = await hookRoot.state.value
+    let refValue = await hookRoot.value
     hookRoot.update()
-    await hookRoot.state.effects
-    expect(hookRoot.state.currentValue).toBe(refValue)
+    await hookRoot.effects
+    expect(hookRoot.currentValue).toBe(refValue)
     hookRoot.update()
-    await hookRoot.state.effects
-    expect(hookRoot.state.currentValue).toBe(refValue)
-    expect(hookRoot.state.currentValue!.current).toBe('initial value')
+    await hookRoot.effects
+    expect(hookRoot.currentValue).toBe(refValue)
+    expect(hookRoot.currentValue!.current).toBe('initial value')
   })
 
   it('should allow modifications of the ref objects current property', async () => {
@@ -21,13 +21,13 @@ describe('useRef', () => {
       return useRef('initial value')
     })
 
-    let refValue = await hookRoot.state.value
+    let refValue = await hookRoot.value
     refValue.current = 'other value'
     hookRoot.update()
-    await hookRoot.state.effects
+    await hookRoot.effects
     hookRoot.update()
-    await hookRoot.state.effects
-    expect(hookRoot.state.currentValue).toBe(refValue)
-    expect(hookRoot.state.currentValue!.current).toBe('other value')
+    await hookRoot.effects
+    expect(hookRoot.currentValue).toBe(refValue)
+    expect(hookRoot.currentValue!.current).toBe('other value')
   })
 })

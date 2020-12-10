@@ -162,7 +162,7 @@ function useInternalEffect(
 
       function runEffectAndAddCleanup(): void {
         // hook might be destroyed before rAF effects run
-        if (activeHook.hookRoot.state.isDestroyed) {
+        if (activeHook.hookRoot.isDestroyed) {
           return
         }
 

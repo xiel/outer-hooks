@@ -10,11 +10,11 @@ describe('useEffect', () => {
       useEffect(mountEffect, [])
     })
 
-    await hookRoot.state.effects
+    await hookRoot.effects
     expect(eachRenderEffect).toHaveBeenCalledTimes(1)
     expect(mountEffect).toHaveBeenCalledTimes(1)
     hookRoot.update()
-    await hookRoot.state.effects
+    await hookRoot.effects
     expect(eachRenderEffect).toHaveBeenCalledTimes(2)
     expect(mountEffect).toHaveBeenCalledTimes(1)
   })
@@ -29,11 +29,11 @@ describe('useLayoutEffect', () => {
       useLayoutEffect(mountLayoutEffect, [])
     })
 
-    await hookRoot.state.value
+    await hookRoot.value
     expect(eachRenderLayoutEffect).toHaveBeenCalledTimes(1)
     expect(mountLayoutEffect).toHaveBeenCalledTimes(1)
     hookRoot.update()
-    await hookRoot.state.value
+    await hookRoot.value
     expect(eachRenderLayoutEffect).toHaveBeenCalledTimes(2)
     expect(mountLayoutEffect).toHaveBeenCalledTimes(1)
   })
@@ -62,7 +62,7 @@ describe('useEffect + useLayoutEffect', () => {
         return true
       }, {})
 
-      await hookRoot.state.value
+      await hookRoot.value
       expect(eachRenderLayoutEffect).toHaveBeenCalledTimes(1)
       expect(mountLayoutEffect).toHaveBeenCalledTimes(1)
       expect(eachRenderEffect).toHaveBeenCalledTimes(0)
@@ -77,7 +77,7 @@ describe('useEffect + useLayoutEffect', () => {
     })
 
     it('at this point all effects have been called', async () => {
-      await hookRoot.state.effects
+      await hookRoot.effects
       expect(eachRenderLayoutEffect).toHaveBeenCalledTimes(1)
       expect(mountLayoutEffect).toHaveBeenCalledTimes(1)
       expect(eachRenderEffect).toHaveBeenCalledTimes(1)
@@ -93,7 +93,7 @@ describe('useEffect + useLayoutEffect', () => {
 
     it('after a call to update and a render only layout effect shoud have re-run', async () => {
       hookRoot.update()
-      await hookRoot.state.value
+      await hookRoot.value
       expect(eachRenderLayoutEffect).toHaveBeenCalledTimes(2)
       expect(mountLayoutEffect).toHaveBeenCalledTimes(1)
       expect(eachRenderEffect).toHaveBeenCalledTimes(1)
@@ -108,7 +108,7 @@ describe('useEffect + useLayoutEffect', () => {
     })
 
     it('should have called only the layout effect cleanup yet', async () => {
-      await hookRoot.state.effects
+      await hookRoot.effects
       expect(eachRenderLayoutEffect).toHaveBeenCalledTimes(2)
       expect(mountLayoutEffect).toHaveBeenCalledTimes(1)
       expect(eachRenderEffect).toHaveBeenCalledTimes(2)
@@ -139,7 +139,7 @@ describe('useEffect + useLayoutEffect', () => {
 
     it('should not return a value anymore', async () => {
       const valueCatch = jest.fn()
-      await hookRoot.state.value.catch(valueCatch)
+      await hookRoot.value.catch(valueCatch)
       expect(valueCatch).toHaveBeenCalledTimes(1)
       expect(valueCatch).toHaveBeenLastCalledWith(
         'not available | hookRoot is destroyed'
@@ -156,7 +156,7 @@ describe('useEffect + useLayoutEffect', () => {
     })
 
     const hookRoot = HookRoot(useJestHook)
-    await hookRoot.state.effects
+    await hookRoot.effects
     await hookRoot.destroy()
 
     expect(layoutEffectCleanup).toHaveBeenCalledTimes(1)
@@ -172,7 +172,7 @@ describe('useEffect + useLayoutEffect', () => {
     })
 
     const hookRoot = HookRoot(useJestHook)
-    await hookRoot.state.value
+    await hookRoot.value
     await hookRoot.destroy()
 
     expect(layoutEffectCleanup).toHaveBeenCalledTimes(1)
@@ -193,13 +193,13 @@ describe('effects promise', () => {
     expect(effect).toHaveBeenCalledTimes(0)
     expect(layoutEffect).toHaveBeenCalledTimes(1)
 
-    await hookRoot.state.value
+    await hookRoot.value
 
     // only layout effect should have been called after value promise
     expect(effect).toHaveBeenCalledTimes(0)
     expect(layoutEffect).toHaveBeenCalledTimes(1)
 
-    await hookRoot.state.effects
+    await hookRoot.effects
 
     // all effects should have rendered by now
     expect(effect).toHaveBeenCalledTimes(1)
@@ -211,13 +211,13 @@ describe('effects promise', () => {
     const useJestHook = jest.fn(() => 'hook value')
     const hookRoot = HookRoot(useJestHook)
 
-    expect(await hookRoot.state.value).toBe('hook value')
+    expect(await hookRoot.value).toBe('hook value')
     expect(useJestHook).toHaveBeenCalledTimes(1)
 
     expect(hookRoot.destroy()).toMatchInlineSnapshot(`Promise {}`)
 
     const effectCatch = jest.fn()
-    await hookRoot.state.effects.catch(effectCatch)
+    await hookRoot.effects.catch(effectCatch)
 
     expect(effectCatch).toHaveBeenCalledTimes(1)
     expect(effectCatch).toHaveBeenLastCalledWith(

@@ -9,8 +9,8 @@ describe('useState', () => {
         setState,
       }
     })
-    expect((await hookRoot.state.value).currentState).toBe('initial value')
-    expect(typeof (await hookRoot.state.value).setState).toBe('function')
+    expect((await hookRoot.value).currentState).toBe('initial value')
+    expect(typeof (await hookRoot.value).setState).toBe('function')
   })
 
   it('should accept a function as initializer', async () => {
@@ -21,8 +21,8 @@ describe('useState', () => {
         setState,
       }
     })
-    expect((await hookRoot.state.value).currentState).toBe('initial value')
-    expect(typeof (await hookRoot.state.value).setState).toBe('function')
+    expect((await hookRoot.value).currentState).toBe('initial value')
+    expect(typeof (await hookRoot.value).setState).toBe('function')
   })
 
   it('should re-render when update function is called', async () => {
@@ -33,12 +33,12 @@ describe('useState', () => {
         setState,
       }
     })
-    const { setState } = await hookRoot.state.value
-    expect((await hookRoot.state.value).currentState).toBe('initial value')
+    const { setState } = await hookRoot.value
+    expect((await hookRoot.value).currentState).toBe('initial value')
     setState('next value')
-    expect((await hookRoot.state.value).currentState).toBe('next value')
+    expect((await hookRoot.value).currentState).toBe('next value')
     setState('next value 2')
-    expect((await hookRoot.state.value).currentState).toBe('next value 2')
+    expect((await hookRoot.value).currentState).toBe('next value 2')
   })
 
   it('should call callback passed to update function with current value', async () => {
@@ -49,12 +49,12 @@ describe('useState', () => {
         setState,
       }
     })
-    const { setState } = await hookRoot.state.value
-    expect((await hookRoot.state.value).currentState).toBe(0)
+    const { setState } = await hookRoot.value
+    expect((await hookRoot.value).currentState).toBe(0)
     setState((n) => n + 1)
-    expect((await hookRoot.state.value).currentState).toBe(1)
+    expect((await hookRoot.value).currentState).toBe(1)
     setState((n) => n + 1)
-    expect((await hookRoot.state.value).currentState).toBe(2)
+    expect((await hookRoot.value).currentState).toBe(2)
   })
 
   it('should not re-render when the same value is set', async () => {
@@ -67,13 +67,13 @@ describe('useState', () => {
         setState,
       }
     })
-    const { setState } = await hookRoot.state.value
-    expect((await hookRoot.state.value).currentState).toBe(0)
+    const { setState } = await hookRoot.value
+    expect((await hookRoot.value).currentState).toBe(0)
     expect(renderId).toBe(0)
     setState((n) => n)
-    expect((await hookRoot.state.value).currentState).toBe(0)
+    expect((await hookRoot.value).currentState).toBe(0)
     setState((n) => n)
-    expect((await hookRoot.state.value).currentState).toBe(0)
+    expect((await hookRoot.value).currentState).toBe(0)
     expect(renderId).toBe(0)
   })
 
@@ -91,14 +91,14 @@ describe('useState', () => {
     })
 
     // gets updated with each effect
-    expect(await hookRoot.state.value).toBe(0)
-    await hookRoot.state.effects
-    expect(await hookRoot.state.value).toBe(1)
-    await hookRoot.state.effects // 2
-    await hookRoot.state.effects // 3
-    await hookRoot.state.effects // 4
-    await hookRoot.state.effects // 5
-    expect(await hookRoot.state.value).toBe(5)
+    expect(await hookRoot.value).toBe(0)
+    await hookRoot.effects
+    expect(await hookRoot.value).toBe(1)
+    await hookRoot.effects // 2
+    await hookRoot.effects // 3
+    await hookRoot.effects // 4
+    await hookRoot.effects // 5
+    expect(await hookRoot.value).toBe(5)
   })
 
   it('should re-render (sync) when set state is called in render', async () => {
@@ -114,9 +114,9 @@ describe('useState', () => {
       return currentState
     })
 
-    expect(await hookRoot.state.value).toBe(5)
-    await hookRoot.state.effects
-    expect(await hookRoot.state.value).toBe(5)
+    expect(await hookRoot.value).toBe(5)
+    await hookRoot.effects
+    expect(await hookRoot.value).toBe(5)
     expect(renderId).toBe(5)
   })
 })

@@ -44,7 +44,7 @@ describe('effects - order of execution', () => {
       return renderId
     }, {})
 
-    await hookRoot.state.effects
+    await hookRoot.effects
 
     expect(log).toMatchInlineSnapshot(`
       Array [
@@ -61,7 +61,7 @@ describe('effects - order of execution', () => {
     log = []
     log.push('-> after update')
     hookRoot.update({})
-    await hookRoot.state.effects
+    await hookRoot.effects
     expect(log).toMatchInlineSnapshot(`
       Array [
         "-> after update",
@@ -79,7 +79,7 @@ describe('effects - order of execution', () => {
     log = []
     log.push('-> after update')
     hookRoot.update({})
-    await hookRoot.state.effects
+    await hookRoot.effects
     expect(log).toMatchInlineSnapshot(`
       Array [
         "-> after update",

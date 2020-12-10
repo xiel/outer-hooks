@@ -1,12 +1,3 @@
-// TODO: consider moving these up onto root
-export interface State<HookValue> {
-  isSuspended: boolean
-  isDestroyed: boolean
-  currentValue?: HookValue
-  value: Promise<HookValue>
-  effects: Promise<void>
-}
-
 export type RenderFn<Props, HookValue> = (
   nextProps: Props
 ) => Root<Props, HookValue>
@@ -21,7 +12,11 @@ type UnsubscribeFn = () => void
 
 export interface Root<Props, HookValue> {
   displayName: string
-  state: State<HookValue>
+  currentValue?: HookValue
+  value: Promise<HookValue>
+  effects: Promise<void>
+  isSuspended: boolean
+  isDestroyed: boolean
   render: RenderFn<Props, HookValue>
   update: UpdateFn<Props, HookValue>
   subscribe: (subscription: Subscription<HookValue>) => UnsubscribeFn

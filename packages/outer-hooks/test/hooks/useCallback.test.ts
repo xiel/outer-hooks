@@ -6,13 +6,13 @@ describe('useCallback', () => {
       return useCallback(() => {}, [])
     })
 
-    let callbackValue = await hookRoot.state.value
+    let callbackValue = await hookRoot.value
     hookRoot.update()
-    await hookRoot.state.effects
-    expect(hookRoot.state.currentValue).toBe(callbackValue)
+    await hookRoot.effects
+    expect(hookRoot.currentValue).toBe(callbackValue)
     hookRoot.update()
-    await hookRoot.state.effects
-    expect(hookRoot.state.currentValue).toBe(callbackValue)
+    await hookRoot.effects
+    expect(hookRoot.currentValue).toBe(callbackValue)
   })
 
   it('should return new callback when deps change', async () => {
@@ -22,13 +22,13 @@ describe('useCallback', () => {
       },
       { dep: 'A' }
     )
-    let callbackValue = await hookRoot.state.value
+    let callbackValue = await hookRoot.value
     hookRoot.update({ dep: 'B' })
-    await hookRoot.state.effects
-    expect(hookRoot.state.currentValue).not.toBe(callbackValue)
-    callbackValue = await hookRoot.state.value
+    await hookRoot.effects
+    expect(hookRoot.currentValue).not.toBe(callbackValue)
+    callbackValue = await hookRoot.value
     hookRoot.update({ dep: 'C' })
-    await hookRoot.state.effects
-    expect(hookRoot.state.currentValue).not.toBe(callbackValue)
+    await hookRoot.effects
+    expect(hookRoot.currentValue).not.toBe(callbackValue)
   })
 })

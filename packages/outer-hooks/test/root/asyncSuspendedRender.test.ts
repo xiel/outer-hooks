@@ -30,36 +30,36 @@ describe('HookRoot | async/suspended render', () => {
   it('should suspended render and re-render after thrown promise resolves', async () => {
     const hookRoot = act(() => HookRoot(useAsyncHook, { animals: 'Cats' }))
 
-    expect(hookRoot.state.currentValue).toEqual(undefined)
-    expect(hookRoot.state.isSuspended).toEqual(true)
-    expect(await hookRoot.state.value).toEqual('Cats are fun!')
-    expect(hookRoot.state.isSuspended).toEqual(false)
+    expect(hookRoot.currentValue).toEqual(undefined)
+    expect(hookRoot.isSuspended).toEqual(true)
+    expect(await hookRoot.value).toEqual('Cats are fun!')
+    expect(hookRoot.isSuspended).toEqual(false)
 
     act(() => hookRoot.update({ animals: 'Birds' }))
 
-    expect(hookRoot.state.isSuspended).toEqual(true)
-    expect(await hookRoot.state.value).toEqual('Birds are fun!')
-    expect(hookRoot.state.isSuspended).toEqual(false)
-    expect(hookRoot.state.isDestroyed).toEqual(false)
+    expect(hookRoot.isSuspended).toEqual(true)
+    expect(await hookRoot.value).toEqual('Birds are fun!')
+    expect(hookRoot.isSuspended).toEqual(false)
+    expect(hookRoot.isDestroyed).toEqual(false)
   })
 
   it('should abort render when thrown promise rejects', async () => {
     const hookRoot = act(() => HookRoot(useAsyncHook, { animals: 'Horses' }))
 
-    expect(hookRoot.state.currentValue).toEqual(undefined)
-    expect(hookRoot.state.isSuspended).toEqual(true)
-    expect(await hookRoot.state.value).toEqual('Horses are fun!')
-    expect(hookRoot.state.isSuspended).toEqual(false)
+    expect(hookRoot.currentValue).toEqual(undefined)
+    expect(hookRoot.isSuspended).toEqual(true)
+    expect(await hookRoot.value).toEqual('Horses are fun!')
+    expect(hookRoot.isSuspended).toEqual(false)
     jest.spyOn(console, 'error').mockImplementationOnce(jest.fn())
 
     try {
       hookRoot.update({ animals: 'Spiders' })
-      await hookRoot.state.value
+      await hookRoot.value
     } catch (e) {
       expect(e).toEqual('scary!')
     }
 
-    expect(hookRoot.state.isSuspended).toEqual(true)
-    expect(hookRoot.state.isDestroyed).toEqual(true)
+    expect(hookRoot.isSuspended).toEqual(true)
+    expect(hookRoot.isDestroyed).toEqual(true)
   })
 })

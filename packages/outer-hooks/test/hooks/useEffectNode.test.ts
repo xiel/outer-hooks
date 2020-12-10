@@ -16,17 +16,17 @@ describe('useEffect / useLayoutEffect (in node environment)', () => {
       return renderId
     })
 
-    await hookRoot.state.effects
+    await hookRoot.effects
     expect(eachRenderEffect).toHaveBeenCalledTimes(0)
     expect(eachRenderLayoutEffect).toHaveBeenCalledTimes(0)
-    expect(hookRoot.state.currentValue).toBe(0)
+    expect(hookRoot.currentValue).toBe(0)
 
     hookRoot.update()
 
-    await hookRoot.state.effects
+    await hookRoot.effects
     expect(eachRenderEffect).toHaveBeenCalledTimes(0)
     expect(eachRenderLayoutEffect).toHaveBeenCalledTimes(0)
-    expect(hookRoot.state.currentValue).toBe(1)
+    expect(hookRoot.currentValue).toBe(1)
   })
 
   it('should throw after destroy', async () => {
@@ -37,10 +37,10 @@ describe('useEffect / useLayoutEffect (in node environment)', () => {
       useLayoutEffect(eachRenderLayoutEffect)
     })
 
-    await hookRoot.state.effects
+    await hookRoot.effects
     await hookRoot.destroy()
     const catchEffects = jest.fn()
-    await hookRoot.state.effects.catch(catchEffects)
+    await hookRoot.effects.catch(catchEffects)
     expect(catchEffects).toHaveBeenCalledTimes(1)
   })
 })
