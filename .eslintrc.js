@@ -17,6 +17,8 @@ module.exports = {
     'import/newline-after-import': 'warn',
     'import/no-duplicates': 'warn',
     'import/no-webpack-loader-syntax': 'warn',
+    'no-redeclare': 'off',
+    '@typescript-eslint/no-redeclare': ['error'],
   },
   settings: {
     react: {
