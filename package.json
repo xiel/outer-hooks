@@ -12,7 +12,7 @@
     "test": "tsdx test",
     "test:coverage": "tsdx test --coverage",
     "test:watch": "tsdx test --watch",
-    "lint": "tsdx lint src",
+    "lint": "tsdx lint src --max-warnings 0",
     "prepare": "tsdx build",
     "prepublishOnly": "cp ../../README.md README.md"
   },
