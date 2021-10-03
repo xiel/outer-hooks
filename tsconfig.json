@@ -1,8 +1,21 @@
 {
-  "extends": "../../tsconfig.json",
-  "include": [
-    "src", "types"],
+  "include": ["src", "types"],
   "compilerOptions": {
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "target": "es5",
+    "lib": ["dom", "esnext"],
+    "importHelpers": true,
+    "declaration": true,
+    "sourceMap": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "resolveJsonModule": true,
+    "jsx": "react",
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "node"
   }
 }
