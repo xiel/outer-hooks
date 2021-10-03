@@ -1,6 +1,5 @@
 {
   "name": "@xiel/outer-hooks",
-  "private": false,
   "version": "0.0.0-beta",
   "description": "Lorem ipsum",
   "main": "dist/index.js",
@@ -13,8 +12,7 @@
     "test:coverage": "tsdx test --coverage",
     "test:watch": "tsdx test --watch",
     "lint": "tsdx lint src --max-warnings 0",
-    "prepare": "tsdx build",
-    "prepublishOnly": "cp ../../README.md README.md"
+    "prepare": "tsdx build"
   },
   "files": [
     "dist",
