@@ -9,4 +9,5 @@ export * from './useCallback'
 export * from './useRef'
 // HookRoot
 export * from './root/HookRoot'
+export * from './root/HookRootTypes'
 export * from './root/act'
