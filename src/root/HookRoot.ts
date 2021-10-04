@@ -1,7 +1,11 @@
 import { __DEV__, isEffectEnvironment } from '../core/env'
 import { ActiveHook, callEffect, outerHookState } from '../core/OuterHookState'
 import { createPromisedValue, PromisedValue } from '../core/promisedValue'
-import { Root, Subscription } from './HookRootTypes'
+import {
+  Root,
+  Subscription,
+  SubscriptionTypes as _SubscriptionTypes,
+} from './HookRootTypes'
 
 export function HookRoot<Props extends {} | undefined, HookValue>(
   hookFunction: (props: Props) => HookValue,
@@ -25,8 +29,13 @@ export function HookRoot<Props extends {}, HookValue>(
   let valueFresh = false
   let currentValue: HookValue | undefined = undefined
   let promisedValue: PromisedValue<HookValue> | undefined
-  let destroyPromise: Promise<void> | undefined
-  const subscriptions = new Set<Subscription<HookValue>>()
+  let isDestroyedPromise: Promise<unknown> | undefined
+
+  type SubscriptionTypes = _SubscriptionTypes<HookValue>
+  const subscriptions = {
+    update: new Set<Subscription<HookValue>>(),
+    destroy: new Set<Subscription<unknown>>(),
+  }
 
   const hookName = hookFunction.name || 'useAnonymousHook'
   const hookRoot: Root<Props, HookValue> = Object.freeze({
@@ -38,17 +47,25 @@ export function HookRoot<Props extends {}, HookValue>(
       return currentValue
     },
     get isDestroyed() {
-      return Boolean(destroyPromise)
+      return Boolean(isDestroyedPromise)
+    },
+    get isDestroyedPromise() {
+      return isDestroyedPromise
     },
     get value() {
       if (valueFresh) {
         return Promise.resolve(currentValue!)
       }
       if (!promisedValue) {
-        if (hookRoot.isDestroyed) {
-          return Promise.reject('not available | hookRoot is destroyed')
-        }
         promisedValue = createPromisedValue<HookValue>()
+
+        if (hookRoot.isDestroyed) {
+          isDestroyedPromise!.then((reason) =>
+            promisedValue!.reject(
+              reason || Error('not available | hookRoot is destroyed')
+            )
+          )
+        }
       }
       return promisedValue.promise
     },
@@ -57,7 +74,9 @@ export function HookRoot<Props extends {}, HookValue>(
         hookRoot.value
           .then(() => {
             const checkDestroyPromise = () =>
-              destroyPromise ? rejectEffects(destroyPromise) : resolveEffects()
+              isDestroyedPromise
+                ? rejectEffects(isDestroyedPromise)
+                : resolveEffects()
 
             if (isEffectEnvironment) {
               requestAnimationFrame(checkDestroyPromise)
@@ -73,6 +92,8 @@ export function HookRoot<Props extends {}, HookValue>(
     destroy,
     subscribe,
     unsubscribe,
+    on,
+    off,
   })
 
   const hook: ActiveHook<Props, HookValue> = {
@@ -117,25 +138,51 @@ export function HookRoot<Props extends {}, HookValue>(
   }
 
   function subscribe(subscription: Subscription<HookValue>) {
-    subscriptions.add(subscription)
+    on('update', subscription)
     return () => unsubscribe(subscription)
   }
 
   function unsubscribe(subscription: Subscription<HookValue>) {
-    if (__DEV__ && !subscriptions.has(subscription)) {
+    off('update', subscription)
+  }
+
+  function on<T extends keyof SubscriptionTypes>(
+    type: T,
+    subscription: SubscriptionTypes[T]
+  ) {
+    if (hookRoot.isDestroyed) {
+      throw isDestroyedPromise
+    }
+    subscriptions[type].add(subscription as Subscription<any>)
+    return () => off(type, subscription)
+  }
+
+  function off<T extends keyof SubscriptionTypes>(
+    type: T,
+    subscription: SubscriptionTypes[T]
+  ) {
+    if (
+      __DEV__ &&
+      !subscriptions[type].has(subscription as Subscription<any>)
+    ) {
       console.error('subscription unknown')
     }
-    subscriptions.delete(subscription)
+    subscriptions[type].delete(subscription as Subscription<any>)
   }
 
   function destroy(reason?: unknown) {
-    if (destroyPromise) {
+    if (isDestroyedPromise) {
       __DEV__ && console.error('already destroyed')
-      return destroyPromise
+      return isDestroyedPromise
     }
     if (promisedValue && !promisedValue.isSettled) {
       promisedValue.reject(reason)
     }
+
+    Promise.resolve().then(() => {
+      subscriptions.destroy.forEach((subscription) => subscription(reason!))
+    })
+
     if (__DEV__ && reason) {
       console.error(`${hookName} was destroyed due to`, reason)
     }
@@ -143,7 +190,7 @@ export function HookRoot<Props extends {}, HookValue>(
     currentValue = undefined
     valueFresh = false
     promisedValue = undefined
-    destroyPromise = new Promise<void>((resolve) => {
+    isDestroyedPromise = new Promise<unknown>((resolve) => {
       // flush all already existing destroy effects (also clears still pending effects)
       hook.afterDestroyEffects.forEach(callEffect)
       hook.afterDestroyEffects.clear()
@@ -153,14 +200,14 @@ export function HookRoot<Props extends {}, HookValue>(
         requestAnimationFrame(() => {
           hook.afterDestroyEffects.forEach(callEffect)
           hook.afterDestroyEffects.clear()
-          resolve()
+          resolve(reason!)
         })
       } else {
-        resolve()
+        resolve(reason!)
       }
     })
 
-    return destroyPromise
+    return isDestroyedPromise
   }
 
   function updateRenderStatesBeforePerformRender() {
@@ -174,7 +221,10 @@ export function HookRoot<Props extends {}, HookValue>(
   function performRender(nextProps?: Props): Root<Props, HookValue> {
     if (!needsRender) return hookRoot
     if (hookRoot.isDestroyed) {
-      __DEV__ && console.warn('can not re-render a Hook, that was destroyed.')
+      __DEV__ &&
+        console.warn(
+          `${hookRoot.displayName}: can not re-render a Hook, that was destroyed.`
+        )
       return hookRoot
     }
 
@@ -233,8 +283,9 @@ export function HookRoot<Props extends {}, HookValue>(
       return performRender()
     } else {
       const freshValue = currentValue!
+
       Promise.resolve().then(() => {
-        subscriptions.forEach((subscription) => subscription(freshValue))
+        subscriptions.update.forEach((subscription) => subscription(freshValue))
       })
 
       if (promisedValue && !promisedValue.isSettled) {

@@ -35,10 +35,15 @@ export function useReducer<State, Action, InitialArg>(
     }
 
     function dispatch(action: Action) {
-      const newValue = reducer(reducerState.value, action)
-      if (!Object.is(reducerState.value, newValue)) {
-        reducerState.value = newValue
-        currentHook.requestRender(true)
+      try {
+        const newValue = reducer(reducerState.value, action)
+        if (!Object.is(reducerState.value, newValue)) {
+          reducerState.value = newValue
+          currentHook.requestRender(true)
+        }
+      } catch (err) {
+        void currentHook.hookRoot.destroy(err)
+        throw err
       }
     }
 

@@ -174,8 +174,8 @@ function useInternalEffect(
             cleanupFn.ref.current = undefined
           }
           cleanupFnReturned = effect()
-        } catch (e) {
-          return void activeHook.hookRoot.destroy(e)
+        } catch (err) {
+          return void activeHook.hookRoot.destroy(err)
         }
 
         if (typeof cleanupFnReturned === 'function') {

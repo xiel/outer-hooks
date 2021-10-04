@@ -1,5 +1,4 @@
-import { HookRoot, useEffect, useLayoutEffect } from '../../src'
-import { Root } from '../../src/root/HookRootTypes'
+import { HookRoot, Root, useEffect, useLayoutEffect } from '../../src'
 
 describe('useEffect', () => {
   it('mount effect / each render effect without deps', async () => {
@@ -142,7 +141,7 @@ describe('useEffect + useLayoutEffect', () => {
       await hookRoot.value.catch(valueCatch)
       expect(valueCatch).toHaveBeenCalledTimes(1)
       expect(valueCatch).toHaveBeenLastCalledWith(
-        'not available | hookRoot is destroyed'
+        Error('not available | hookRoot is destroyed')
       )
     })
   })
@@ -221,7 +220,7 @@ describe('effects promise', () => {
 
     expect(effectCatch).toHaveBeenCalledTimes(1)
     expect(effectCatch).toHaveBeenLastCalledWith(
-      'not available | hookRoot is destroyed'
+      Error('not available | hookRoot is destroyed')
     )
   })
 })
