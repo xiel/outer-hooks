@@ -6,6 +6,7 @@ test('exported interface', () => {
       "HookRoot": [Function],
       "act": [Function],
       "useCallback": [Function],
+      "useConnectHook": [Function],
       "useEffect": [Function],
       "useLayoutEffect": [Function],
       "useMemo": [Function],

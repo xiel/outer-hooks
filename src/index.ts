@@ -7,6 +7,7 @@ export * from './useEffect'
 export * from './useMemo'
 export * from './useCallback'
 export * from './useRef'
+export * from './useConnectHook'
 // HookRoot
 export * from './root/HookRoot'
 export * from './root/HookRootTypes'
