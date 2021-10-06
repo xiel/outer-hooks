@@ -1,6 +1,6 @@
 import { Root } from './root/HookRootTypes'
-import { useState } from './useState'
 import { useLayoutEffect } from './useEffect'
+import { useState } from './useState'
 
 export const useConnectHook = <T, K>(hookRoot: Root<T, K>) => {
   const [value, setValue] = useState(hookRoot.currentValue)
