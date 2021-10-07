@@ -14,7 +14,7 @@ const getFromCache = (key: string) => {
       const value = `${key} are fun!`
       cache.set(key, value)
       r(value)
-    }, 100)
+    }, 10)
   )
 }
 
