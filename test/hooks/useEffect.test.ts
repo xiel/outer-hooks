@@ -139,6 +139,7 @@ describe('useEffect + useLayoutEffect', () => {
     it('should not return a value anymore', async () => {
       const valueCatch = jest.fn()
       await hookRoot.value.catch(valueCatch)
+      expect(hookRoot.currentValue).toBeUndefined()
       expect(valueCatch).toHaveBeenCalledTimes(1)
       expect(valueCatch).toHaveBeenLastCalledWith(
         Error('not available | hookRoot is destroyed')

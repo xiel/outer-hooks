@@ -35,7 +35,7 @@ describe('useMemo', () => {
     expect(valueFactory).toHaveBeenCalledTimes(2)
   })
 
-  it('should not mix up values', async () => {
+  it('must not mix up values', async () => {
     const memTest1 = HookRoot(
       ({ out }) => {
         const mem1 = useMemo(() => 'a', [])
