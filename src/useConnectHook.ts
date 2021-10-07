@@ -6,6 +6,7 @@ export const useConnectHook = <T, K>(hookRoot: Root<T, K>) => {
   const [value, setValue] = useState(hookRoot.currentValue)
   const [hookRootError, setHookRootError] = useState<unknown>()
 
+  // When passed-in hookRoot has suspended, suspend current hook as well and wait for its fulfillment
   if (hookRoot.isSuspended) {
     throw hookRoot.value
   }
