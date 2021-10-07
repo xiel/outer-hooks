@@ -38,6 +38,8 @@ describe('HookRoot | async/suspended render', () => {
     act(() => hookRoot.update({ animals: 'Birds' }))
 
     expect(hookRoot.isSuspended).toEqual(true)
+    expect(hookRoot.isDestroyed).toEqual(false)
+
     expect(await hookRoot.value).toEqual('Birds are fun!')
     expect(hookRoot.isSuspended).toEqual(false)
     expect(hookRoot.isDestroyed).toEqual(false)
