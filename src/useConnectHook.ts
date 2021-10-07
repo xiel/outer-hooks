@@ -18,7 +18,7 @@ export const useConnectHook = <T, K>(hookRoot: Root<T, K>) => {
     if (hookRoot.isDestroyed) return
     if (hookRoot.isSuspended) return
     setValue(hookRoot.currentValue)
-    return hookRoot.subscribe(setValue)
+    return hookRoot.on('update', setValue)
   }, [hookRoot])
 
   useLayoutEffect(() => {

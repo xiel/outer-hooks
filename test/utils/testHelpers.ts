@@ -6,3 +6,7 @@ export const nextRenderWithFakeTimers = async () => {
 }
 
 export const nextMicrotask = () => Promise.resolve()
+
+export const silenceNextConsoleError = () => {
+  jest.spyOn(console, 'error').mockImplementationOnce(jest.fn)
+}

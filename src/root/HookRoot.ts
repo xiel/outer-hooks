@@ -20,6 +20,8 @@ export function HookRoot<Props extends {}, HookValue>(
   hookFunction: (props: Props) => HookValue,
   initialProps?: Props
 ): Root<Props, HookValue> {
+  type SubscriptionTypes = _SubscriptionTypes<HookValue>
+
   // TODO: move props onto state / hookRoot
   let renderId = -1
   let needsRender = true
@@ -31,7 +33,6 @@ export function HookRoot<Props extends {}, HookValue>(
   let promisedValue: PromisedValue<HookValue> | undefined
   let isDestroyedPromise: Promise<unknown> | undefined
 
-  type SubscriptionTypes = _SubscriptionTypes<HookValue>
   const subscriptions = {
     update: new Set<Subscription<HookValue>>(),
     destroy: new Set<Subscription<unknown>>(),
@@ -90,8 +91,6 @@ export function HookRoot<Props extends {}, HookValue>(
     render,
     update,
     destroy,
-    subscribe,
-    unsubscribe,
     on,
     off,
   })
@@ -137,22 +136,10 @@ export function HookRoot<Props extends {}, HookValue>(
     return render({ ...latestRenderProps, ...nextProps })
   }
 
-  function subscribe(subscription: Subscription<HookValue>) {
-    on('update', subscription)
-    return () => unsubscribe(subscription)
-  }
-
-  function unsubscribe(subscription: Subscription<HookValue>) {
-    off('update', subscription)
-  }
-
   function on<T extends keyof SubscriptionTypes>(
     type: T,
     subscription: SubscriptionTypes[T]
   ) {
-    if (hookRoot.isDestroyed) {
-      throw isDestroyedPromise
-    }
     subscriptions[type].add(subscription as Subscription<any>)
     return () => off(type, subscription)
   }
@@ -179,10 +166,6 @@ export function HookRoot<Props extends {}, HookValue>(
       promisedValue.reject(reason)
     }
 
-    Promise.resolve().then(() => {
-      subscriptions.destroy.forEach((subscription) => subscription(reason!))
-    })
-
     if (__DEV__ && reason) {
       console.error(`${hookName} was destroyed due to`, reason)
     }
@@ -200,14 +183,22 @@ export function HookRoot<Props extends {}, HookValue>(
         requestAnimationFrame(() => {
           hook.afterDestroyEffects.forEach(callEffect)
           hook.afterDestroyEffects.clear()
+          notifyDestroySubscriptions(reason)
           resolve(reason!)
         })
       } else {
+        notifyDestroySubscriptions(reason)
         resolve(reason!)
       }
     })
 
     return isDestroyedPromise
+  }
+
+  function notifyDestroySubscriptions(reason?: unknown) {
+    Promise.resolve().then(() => {
+      subscriptions.destroy.forEach((subscription) => subscription(reason))
+    })
   }
 
   function updateRenderStatesBeforePerformRender() {
