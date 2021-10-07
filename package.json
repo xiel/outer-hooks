@@ -12,7 +12,8 @@
     "test:coverage": "tsdx test --coverage",
     "test:watch": "tsdx test --watch",
     "lint": "tsdx lint src --max-warnings 0",
-    "prepare": "tsdx build"
+    "prepare": "tsdx build",
+    "stryker:run": "stryker run"
   },
   "files": [
     "dist",
