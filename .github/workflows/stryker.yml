@@ -1,4 +1,4 @@
-name: Node
+name: Stryker
 
 on: [push]
 
@@ -24,4 +24,4 @@ jobs:
           yarn --frozen-lockfile
           yarn lint
           yarn build
-          yarn stryker
+          yarn stryker:run
