@@ -1,34 +1,9 @@
 import { act, HookRoot } from '../../src'
-
-const cache = new Map<string, string>()
-
-const getFromCache = (key: string) => {
-  if (cache.has(key)) {
-    return cache.get(key)
-  }
-  return new Promise<string>((r, reject) =>
-    setTimeout(() => {
-      if (key === 'Spiders') {
-        reject('scary!')
-      }
-      const value = `${key} are fun!`
-      cache.set(key, value)
-      r(value)
-    }, 100)
-  )
-}
-
-const useAsyncHook = jest.fn(({ animals }: { animals: string }) => {
-  const cachedVal = getFromCache(animals)
-  if (cachedVal && cachedVal instanceof Promise) {
-    throw cachedVal
-  }
-  return cachedVal
-})
+import { useAsyncTestHook } from '../utils/useAsyncTestHook'
 
 describe('HookRoot | async/suspended render', () => {
   it('should suspended render and re-render after thrown promise resolves', async () => {
-    const hookRoot = act(() => HookRoot(useAsyncHook, { animals: 'Cats' }))
+    const hookRoot = act(() => HookRoot(useAsyncTestHook, { animals: 'Cats' }))
 
     expect(hookRoot.currentValue).toEqual(undefined)
     expect(hookRoot.isSuspended).toEqual(true)
@@ -46,7 +21,9 @@ describe('HookRoot | async/suspended render', () => {
   })
 
   it('should abort render when thrown promise rejects', async () => {
-    const hookRoot = act(() => HookRoot(useAsyncHook, { animals: 'Horses' }))
+    const hookRoot = act(() =>
+      HookRoot(useAsyncTestHook, { animals: 'Horses' })
+    )
 
     expect(hookRoot.currentValue).toEqual(undefined)
     expect(hookRoot.isSuspended).toEqual(true)
