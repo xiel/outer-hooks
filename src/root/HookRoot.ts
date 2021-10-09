@@ -1,6 +1,10 @@
 import { __DEV__, isEffectEnvironment } from '../core/env'
 import { ActiveHook, callEffect, outerHookState } from '../core/OuterHookState'
-import { createPromisedValue, PromisedValue } from '../core/promisedValue'
+import {
+  createPromisedValue,
+  isPromiseLike,
+  PromisedValue,
+} from '../core/promisedValue'
 import {
   Root,
   Subscription,
@@ -240,15 +244,10 @@ export function HookRoot<Props extends {}, HookValue>(
 
       hook.afterRenderEffects.forEach(callEffect)
       hook.afterRenderEffects.clear()
-    } catch (e) {
-      let caughtError: Error | PromiseLike<unknown> = e
-
+    } catch (caughtError) {
       hadError = true
 
-      if (
-        (caughtError && caughtError instanceof Promise) ||
-        ('then' in caughtError && typeof caughtError.then === 'function')
-      ) {
+      if (isPromiseLike(caughtError)) {
         needsRender = true
         isSuspended = true
 
