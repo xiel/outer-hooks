@@ -32,3 +32,12 @@ export function createPromisedValue<Value>(): PromisedValue<Value> {
 
   return promisedValue
 }
+
+export function isPromiseLike(err: unknown): err is PromiseLike<unknown> {
+  if (typeof err !== 'object') return false
+  if (!err) return false
+  if ('then' in err && typeof (err as { then: unknown }).then === 'function') {
+    return true
+  }
+  return false
+}
