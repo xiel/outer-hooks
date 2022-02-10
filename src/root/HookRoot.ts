@@ -1,4 +1,4 @@
-import { __DEV__, isEffectEnvironment } from '../core/env'
+import { __DEV__, scheduleEffect } from '../core/env'
 import { ActiveHook, callEffect, outerHookState } from '../core/OuterHookState'
 import {
   createPromisedValue,
@@ -11,17 +11,24 @@ import {
   SubscriptionTypes as _SubscriptionTypes,
 } from './HookRootTypes'
 
+type HookFnOptions = {
+  effectsDisabled?: boolean
+}
+
+type HookFunction<Props, HookValue> = ((props: Props) => HookValue) &
+  HookFnOptions
+
 export function HookRoot<Props extends {} | undefined, HookValue>(
-  hookFunction: (props: Props) => HookValue,
+  hookFunction: HookFunction<Props, HookValue>,
   initialProps: Props
 ): Root<Props, HookValue>
 
 export function HookRoot<Props extends {} | undefined, HookValue>(
-  hookFunction: (props?: Props) => HookValue
+  hookFunction: ((props?: Props) => HookValue) & HookFnOptions
 ): Root<Props, HookValue>
 
 export function HookRoot<Props extends {}, HookValue>(
-  hookFunction: (props: Props) => HookValue,
+  hookFunction: HookFunction<Props, HookValue>,
   initialProps?: Props
 ): Root<Props, HookValue> {
   type SubscriptionTypes = _SubscriptionTypes<HookValue>
@@ -83,8 +90,8 @@ export function HookRoot<Props extends {}, HookValue>(
                 ? rejectEffects(isDestroyedPromise)
                 : resolveEffects()
 
-            if (isEffectEnvironment) {
-              requestAnimationFrame(checkDestroyPromise)
+            if (hook.effectsEnabled) {
+              scheduleEffect(checkDestroyPromise)
             } else {
               setTimeout(checkDestroyPromise)
             }
@@ -101,6 +108,7 @@ export function HookRoot<Props extends {}, HookValue>(
 
   const hook: ActiveHook<Props, HookValue> = {
     hookRoot,
+    effectsEnabled: hookFunction.effectsDisabled !== true,
     // batches all updates in next microtask
     requestRender(immediate) {
       if (immediate) {
@@ -182,9 +190,9 @@ export function HookRoot<Props extends {}, HookValue>(
       hook.afterDestroyEffects.forEach(callEffect)
       hook.afterDestroyEffects.clear()
 
-      if (isEffectEnvironment) {
+      if (hook.effectsEnabled) {
         // again flush destroy effects after animation frame (eg. non-layout effects cleanups)
-        requestAnimationFrame(() => {
+        scheduleEffect(() => {
           hook.afterDestroyEffects.forEach(callEffect)
           hook.afterDestroyEffects.clear()
           notifyDestroySubscriptions(reason)

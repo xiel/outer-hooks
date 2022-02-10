@@ -1,4 +1,5 @@
 import { HookRoot, useConnectHook } from '../../src'
+import { scheduleEffect } from '../../src/core/env'
 import { silenceNextConsoleError } from '../utils/testHelpers'
 import { useAsyncTestHook } from '../utils/useAsyncTestHook'
 
@@ -33,7 +34,7 @@ describe('useConnectHook', () => {
     await expect(outerHook.effects).rejects.toThrowError(error)
 
     // await outerHook.effects
-    await new Promise((r) => requestAnimationFrame(r))
+    await new Promise((r) => scheduleEffect(r))
 
     expect.assertions(6)
   })

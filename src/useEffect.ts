@@ -1,5 +1,5 @@
 import { depsRequireUpdate } from './core/areDepsEqual'
-import { isEffectEnvironment } from './core/env'
+import { scheduleEffect } from './core/env'
 import { ActiveHook, callEffect, Effect } from './core/OuterHookState'
 import { createRef, RefObject } from './core/refObject'
 import { Dependencies } from './core/sharedTypes'
@@ -150,14 +150,17 @@ function useInternalEffect(
     cleanupFn,
   ] = useInternalStatefulHook('effect', initEffectState(isLayout))!
 
-  if (isEffectEnvironment && depsRequireUpdate(deps, lastDeps.ref.current)) {
+  if (
+    activeHook.effectsEnabled &&
+    depsRequireUpdate(deps, lastDeps.ref.current)
+  ) {
     const renderEffect = () => {
       lastDeps.ref.current = deps
 
       if (isLayout) {
         runEffectAndAddCleanup()
       } else {
-        requestAnimationFrame(runEffectAndAddCleanup)
+        scheduleEffect(runEffectAndAddCleanup)
       }
 
       function runEffectAndAddCleanup(): void {
@@ -191,7 +194,7 @@ function useInternalEffect(
     renderEffects.add(renderEffect)
   }
 
-  if (isEffectEnvironment) {
+  if (activeHook.effectsEnabled) {
     activeHook.afterRenderEffects.add(hooksEffects.runRenderEffects)
     activeHook.afterDestroyEffects.add(hooksEffects.runDestroyEffects)
   }
