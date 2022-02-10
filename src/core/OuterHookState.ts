@@ -8,6 +8,7 @@ export interface ActiveHook<Props = unknown, HookValue = unknown> {
   requestRender(immediate?: boolean): void
   afterRenderEffects: Set<Effect>
   afterDestroyEffects: Set<Effect>
+  effectsEnabled: boolean
 }
 
 export interface OuterHookState {
