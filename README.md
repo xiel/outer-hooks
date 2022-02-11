@@ -15,7 +15,7 @@ If you know and love [hooks from React](https://reactjs.org/docs/hooks-intro.htm
 - No JSX here, OuterHooks does not render to the DOM. They only meant to compose logic (native & custom hooks)
 - Life cycle hooks also run in Node (effects, cleanups)
 
-### 🚧 Work in progress 🚧
+### Work in progress 🚧
 
 This library is still in **beta**. It works, is well tested and actively being developed. But the API is not 100% stable yet.
 
