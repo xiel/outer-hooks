@@ -7,7 +7,7 @@ const {
   cancelAnimationFrame,
   clearImmediate,
   clearTimeout,
-} = global
+} = globalThis
 
 export const scheduleEffect =
   requestAnimationFrame || setImmediate || setTimeout
