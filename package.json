@@ -16,8 +16,7 @@
     "stryker:run": "stryker run"
   },
   "files": [
-    "dist",
-    "src"
+    "dist"
   ],
   "peerDependencies": {},
   "dependencies": {},
