@@ -1,6 +1,8 @@
 name: Stryker
 
-on: [push]
+on:
+  schedule:
+  - cron: "0 8 * * 1-5"
 
 jobs:
   build:
