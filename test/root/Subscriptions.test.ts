@@ -76,6 +76,25 @@ describe('Subscriptions', () => {
       expect(onDestroyFn).toHaveBeenCalledTimes(1)
     })
 
+    it('should call on("destroy") func when hook was destroyed externally', async () => {
+      silenceNextConsoleError()
+      const hookRoot = runHook(() => {
+        return null
+      })
+      const { onDestroyFn, onUpdateFn } = prepareHookRoot(hookRoot)
+      await hookRoot.value
+      expect(onUpdateFn).toHaveBeenCalledTimes(1)
+      expect(onDestroyFn).toHaveBeenCalledTimes(0)
+
+      await hookRoot.destroy('some reason')
+      const catchFn = jest.fn()
+      await hookRoot.value.catch(catchFn)
+      await hookRoot.isDestroyedPromise
+      expect(catchFn).toHaveBeenCalledTimes(1)
+      expect(onUpdateFn).toHaveBeenCalledTimes(1)
+      expect(onDestroyFn).toHaveBeenCalledTimes(1)
+    })
+
     it('should NOT call on("destroy") func when unsubscribed using off', async () => {
       silenceNextConsoleError()
       const hookRoot = runHook((shouldThrow = false) => {

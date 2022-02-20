@@ -49,4 +49,11 @@ function useCustomHook() {
 
 // Run the hook
 const custom = runHook(useCustomHook)
+
+// Gets called every time the hook has run
+// In this example it will get called with the values 0, 1, 2, 3, 4, 5
+custom.on('update', (value) => console.log(value))
+
+// Gets called when the hook was destroyed
+custom.on('destroy', (error) => console.error('destroyed'))
 ```
