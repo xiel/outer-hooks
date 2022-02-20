@@ -1,6 +1,6 @@
 {
   "name": "@xiel/outer-hooks",
-  "version": "0.0.3-beta",
+  "version": "0.0.4-beta",
   "description": "Lorem ipsum",
   "main": "dist/index.js",
   "module": "dist/outer-hooks.esm.js",
