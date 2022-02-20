@@ -16,9 +16,17 @@ If you know and love [hooks from React](https://reactjs.org/docs/hooks-intro.htm
 - Only meant to compose logic using native & custom hooks
 - Life cycle hooks like useEffect also run in Node
 
-### Work in progress 🚧
+## Install
+
+```
+yarn add @xiel/outer-hooks
+```
+
+#### Warning: Work in progress 🚧
 
 This library is still in **beta**. It works, is well tested and actively being developed. But the API is not 100% stable yet.
+
+## Hooks
 
 ### Native Hooks
 
@@ -29,9 +37,9 @@ For now please check the React [Hooks API reference](https://reactjs.org/docs/ho
 
 ### Custom Hooks
 
-By composing native hooks, you can create Custom Hooks. Native Hooks and Custom Hooks can be composed and nested.
+By composing native hooks, you are creating a custom hook. Native hooks and custom hooks can be composed and nested.
 
-### Run Hooks
+#### Example
 
 ```ts
 // Define a custom hook
