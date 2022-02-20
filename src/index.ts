@@ -8,7 +8,7 @@ export * from './useMemo'
 export * from './useReducer'
 export * from './useRef'
 export * from './useState'
-// HookRoot
+// runHook
 export * from './root/act'
-export * from './root/HookRoot'
-export * from './root/HookRootTypes'
+export * from './root/runHook'
+export * from './root/runHookTypes'

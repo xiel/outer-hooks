@@ -23,8 +23,8 @@ export function useInternalStatefulHook<Type extends keyof HookState>(
   initFn: InitHookStateFn<Type>
 ): NonNullable<HookState[Type]> {
   if (!outerHookState.currentHook) {
-    __DEV__ && console.error('please wrap your outer hook in a HookRoot')
-    throw new Error('please wrap your outer hook in a HookRoot')
+    __DEV__ && console.error('please wrap your outer hook in a runHook')
+    throw new Error('please wrap your outer hook in a runHook')
   }
   const { currentHook, currentIndex } = outerHookState
   const currentHookStates = HookStates.get(outerHookState.currentHook) || []

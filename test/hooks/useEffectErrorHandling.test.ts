@@ -1,4 +1,4 @@
-import { HookRoot, useEffect, useLayoutEffect } from '../../src'
+import { runHook, useEffect, useLayoutEffect } from '../../src'
 
 describe('useEffect Exception Handling', () => {
   it('should not call effect & cleanup if hook was not rendered fully (error/exception)', async () => {
@@ -19,7 +19,7 @@ describe('useEffect Exception Handling', () => {
       throw error
     }
 
-    let hookRoot = HookRoot(useJestHook)
+    let hookRoot = runHook(useJestHook)
 
     const effectCatch = jest.fn()
     const valueCatch = jest.fn()
@@ -44,7 +44,7 @@ describe('useEffect Exception Handling', () => {
     let cleanUp = (l: string) => `${l} -> cleanup`
     const errorMessage = 'error in effect!'
 
-    const hookRoot = HookRoot(() => {
+    const hookRoot = runHook(() => {
       renderId++
 
       useEffect(() => {
@@ -132,7 +132,7 @@ describe('useEffect Exception Handling', () => {
     let cleanUp = (l: string) => `${l} -> cleanup`
     const errorMessage = 'error in effect!'
 
-    const hookRoot = HookRoot(() => {
+    const hookRoot = runHook(() => {
       renderId++
 
       useEffect(() => {

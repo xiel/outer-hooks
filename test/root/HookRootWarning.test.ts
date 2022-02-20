@@ -8,10 +8,10 @@ import {
   useState,
 } from '../../src'
 
-const missingHookRootError = `please wrap your outer hook in a HookRoot`
+const missingHookRootError = `please wrap your outer hook in a runHook`
 
-describe('HookRoot Warning', () => {
-  describe('throw error when called without HookRoot', () => {
+describe('runHook Warning', () => {
+  describe('throw error when called without runHook', () => {
     const spy = jest.spyOn(console, 'error').mockImplementation()
 
     test('useCallback', () => {

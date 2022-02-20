@@ -1,4 +1,4 @@
-import { HookRoot, useConnectHook } from '../../src'
+import { runHook, useConnectHook } from '../../src'
 import { scheduleEffect } from '../../src/core/env'
 import { silenceNextConsoleError } from '../utils/testHelpers'
 import { useAsyncTestHook } from '../utils/useAsyncTestHook'
@@ -9,7 +9,7 @@ describe('useConnectHook', () => {
     silenceNextConsoleError()
 
     const error = Error('condition error')
-    const innerHook = HookRoot(function useConditionalThrow(condition = false) {
+    const innerHook = runHook(function useConditionalThrow(condition = false) {
       if (condition) {
         throw error
       }
@@ -17,7 +17,7 @@ describe('useConnectHook', () => {
         condition,
       }
     })
-    const outerHook = HookRoot(function useParentHook() {
+    const outerHook = runHook(function useParentHook() {
       const conB = useConnectHook(innerHook)
       return {
         conB,
@@ -44,13 +44,13 @@ describe('useConnectHook', () => {
     silenceNextConsoleError()
 
     const error = Error('condition error')
-    const innerHook = HookRoot(function useAlwaysThrow() {
+    const innerHook = runHook(function useAlwaysThrow() {
       throw error
     })
 
     expect(innerHook.isDestroyed).toBe(true)
 
-    const outerHook = HookRoot(function useParentHook() {
+    const outerHook = runHook(function useParentHook() {
       const conB = useConnectHook(innerHook)
       return {
         conB,
@@ -62,7 +62,7 @@ describe('useConnectHook', () => {
     await expect(innerHook.effects).rejects.toThrowError(error)
 
     const outerError = Error(
-      'Connected hook was destroyed: useConnectHook(HookRoot(useAlwaysThrow)).'
+      'Connected hook was destroyed: useConnectHook(runHook(useAlwaysThrow)).'
     )
 
     await expect(outerHook.effects).rejects.toThrowError(outerError)
@@ -73,12 +73,12 @@ describe('useConnectHook', () => {
   })
 
   it('Suspends when connected hook suspends & resolves', async function() {
-    const innerHook = HookRoot(useAsyncTestHook, {
+    const innerHook = runHook(useAsyncTestHook, {
       animals: 'Cats',
     })
     expect(innerHook.isSuspended).toBeTruthy()
 
-    const outerHook = HookRoot(function useParentHook() {
+    const outerHook = runHook(function useParentHook() {
       const conB = useConnectHook(innerHook)
       return {
         conB,
@@ -97,12 +97,12 @@ describe('useConnectHook', () => {
   it('Suspends when connected hook suspends & rejects', async function() {
     silenceNextConsoleError()
     silenceNextConsoleError()
-    const innerHook = HookRoot(useAsyncTestHook, {
+    const innerHook = runHook(useAsyncTestHook, {
       animals: 'Spiders',
     })
     expect(innerHook.isSuspended).toBeTruthy()
 
-    const outerHook = HookRoot(function useParentHook() {
+    const outerHook = runHook(function useParentHook() {
       const conB = useConnectHook(innerHook)
       return {
         conB,

@@ -1,4 +1,4 @@
-import { Root } from '../root/HookRootTypes'
+import { Root } from '../root/runHookTypes'
 
 export type Effect = () => void
 export type FlushableRenderFn = () => unknown

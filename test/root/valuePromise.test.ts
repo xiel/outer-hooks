@@ -1,10 +1,10 @@
-import { act, HookRoot } from '../../src'
+import { act, runHook } from '../../src'
 
 const usePropReturningHook = <P>(props: P) => props
 
-describe('HookRoot | async value', () => {
+describe('runHook | async value', () => {
   it('should return a value that can be awaited', async () => {
-    const hookRoot = HookRoot(usePropReturningHook, { a: 1, b: 1 })
+    const hookRoot = runHook(usePropReturningHook, { a: 1, b: 1 })
 
     expect(await hookRoot.value).toEqual({ a: 1, b: 1 })
 
@@ -14,7 +14,7 @@ describe('HookRoot | async value', () => {
   })
 
   it('should still return the value of the initial render after flush', async () => {
-    const hookRoot = act(() => HookRoot(usePropReturningHook, { a: 1, b: 1 }))
+    const hookRoot = act(() => runHook(usePropReturningHook, { a: 1, b: 1 }))
 
     expect(await hookRoot.value).toEqual({ a: 1, b: 1 })
 
@@ -28,7 +28,7 @@ describe('HookRoot | async value', () => {
   it('should always render batched (props that are immediately overwritten will never be rendered)', async () => {
     const props = { a: 1, b: 1 }
     const useJestHook = jest.fn(usePropReturningHook)
-    const hookRoot = HookRoot(useJestHook, props)
+    const hookRoot = runHook(useJestHook, props)
 
     expect(await hookRoot.value).toEqual(props)
     expect(useJestHook).toHaveBeenLastCalledWith(props)

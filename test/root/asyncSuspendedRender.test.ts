@@ -1,9 +1,9 @@
-import { act, HookRoot } from '../../src'
+import { act, runHook } from '../../src'
 import { useAsyncTestHook } from '../utils/useAsyncTestHook'
 
-describe('HookRoot | async/suspended render', () => {
+describe('runHook | async/suspended render', () => {
   it('should suspended render and re-render after thrown promise resolves', async () => {
-    const hookRoot = act(() => HookRoot(useAsyncTestHook, { animals: 'Cats' }))
+    const hookRoot = act(() => runHook(useAsyncTestHook, { animals: 'Cats' }))
 
     expect(hookRoot.currentValue).toEqual(undefined)
     expect(hookRoot.isSuspended).toEqual(true)
@@ -21,9 +21,7 @@ describe('HookRoot | async/suspended render', () => {
   })
 
   it('should abort render when thrown promise rejects', async () => {
-    const hookRoot = act(() =>
-      HookRoot(useAsyncTestHook, { animals: 'Horses' })
-    )
+    const hookRoot = act(() => runHook(useAsyncTestHook, { animals: 'Horses' }))
 
     expect(hookRoot.currentValue).toEqual(undefined)
     expect(hookRoot.isSuspended).toEqual(true)

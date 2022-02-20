@@ -1,4 +1,4 @@
-import { act, HookRoot } from '../../src'
+import { act, runHook } from '../../src'
 import { nextMicrotask } from '../utils/testHelpers'
 
 const usePropReturningHook = <P>(props: P) => props
@@ -6,16 +6,16 @@ const useNameHook = ({ name }: { name: string }) => {
   return name
 }
 
-describe('HookRoot Interface', () => {
+describe('runHook Interface', () => {
   it('basic interface with named hook', () => {
     const useNamedHook = () => 'hook value'
-    const hookRoot = act(() => HookRoot(useNamedHook))
+    const hookRoot = act(() => runHook(useNamedHook))
 
     expect(hookRoot).toMatchInlineSnapshot(`
       Object {
         "currentValue": "hook value",
         "destroy": [Function],
-        "displayName": "HookRoot(useNamedHook)",
+        "displayName": "runHook(useNamedHook)",
         "effects": Promise {},
         "isDestroyed": false,
         "isDestroyedPromise": undefined,
@@ -30,18 +30,18 @@ describe('HookRoot Interface', () => {
   })
 
   it('display name for anonymous hook', () => {
-    const hookRoot = HookRoot(() => {}, {})
-    expect(hookRoot.displayName).toBe('HookRoot(useAnonymousHook)')
+    const hookRoot = runHook(() => {}, {})
+    expect(hookRoot.displayName).toBe('runHook(useAnonymousHook)')
   })
 
   it('should render sync', () => {
-    const hookRoot = HookRoot(useNameHook, { name: 'Peter' })
+    const hookRoot = runHook(useNameHook, { name: 'Peter' })
     expect(hookRoot.currentValue).toMatchInlineSnapshot(`"Peter"`)
     expect(hookRoot.value).toMatchInlineSnapshot(`Promise {}`)
   })
 
   it('can create a hook without props', () => {
-    expect(act(() => HookRoot(() => 42)).currentValue).toEqual(42)
+    expect(act(() => runHook(() => 42)).currentValue).toEqual(42)
   })
 
   it('can create a hook with optional props', () => {
@@ -50,23 +50,21 @@ describe('HookRoot Interface', () => {
       return name
     }
 
-    expect(act(() => HookRoot(useOptionalNameHook)).currentValue).toBe(
-      'No Name'
-    )
+    expect(act(() => runHook(useOptionalNameHook)).currentValue).toBe('No Name')
     expect(
-      act(() => HookRoot(useOptionalNameHook, { name: 'Max' })).currentValue
+      act(() => runHook(useOptionalNameHook, { name: 'Max' })).currentValue
     ).toBe('Max')
   })
 
   it('can create a hook inline with props', () => {
-    const hookRoot = act(() => HookRoot(({ n }: { n: number }) => n, { n: 42 }))
+    const hookRoot = act(() => runHook(({ n }: { n: number }) => n, { n: 42 }))
     expect(hookRoot.currentValue).toEqual(42)
   })
 
   describe('sync renders using act', () => {
     let initialProps = { letter: 'a' }
 
-    const hookRoot = act(() => HookRoot(usePropReturningHook, initialProps))
+    const hookRoot = act(() => runHook(usePropReturningHook, initialProps))
 
     it('should update value synchronous with act', () => {
       expect(hookRoot.currentValue).toEqual(initialProps)
@@ -86,7 +84,7 @@ describe('HookRoot Interface', () => {
 
   describe('currentValue is updated after microtask (without act)', () => {
     it('should update value only after next microtask execution', async () => {
-      const hookRoot = HookRoot((p) => p, { test: 'fake timers' })
+      const hookRoot = runHook((p) => p, { test: 'fake timers' })
 
       // first render is sync
       expect(hookRoot.currentValue).toEqual({ test: 'fake timers' })
@@ -105,7 +103,7 @@ describe('act', () => {
   test('throw if act is used in production', () => {
     const prevEnv = process.env.NODE_ENV
     process.env.NODE_ENV = 'production'
-    expect(() => act(() => HookRoot(() => 42))).toThrow()
+    expect(() => act(() => runHook(() => 42))).toThrow()
     process.env.NODE_ENV = prevEnv
   })
 })

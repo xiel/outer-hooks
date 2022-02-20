@@ -1,10 +1,10 @@
-import { HookRoot, Root, useEffect, useLayoutEffect } from '../../src'
+import { Root, runHook, useEffect, useLayoutEffect } from '../../src'
 
 describe('useEffect', () => {
   it('mount effect / each render effect without deps', async () => {
     const eachRenderEffect = jest.fn()
     const mountEffect = jest.fn()
-    const hookRoot = HookRoot(() => {
+    const hookRoot = runHook(() => {
       useEffect(eachRenderEffect)
       useEffect(mountEffect, [])
     })
@@ -23,7 +23,7 @@ describe('useLayoutEffect', () => {
   it('mount effect / effect without deps', async () => {
     const eachRenderLayoutEffect = jest.fn()
     const mountLayoutEffect = jest.fn()
-    const hookRoot = HookRoot(() => {
+    const hookRoot = runHook(() => {
       useLayoutEffect(eachRenderLayoutEffect)
       useLayoutEffect(mountLayoutEffect, [])
     })
@@ -53,7 +53,7 @@ describe('useEffect + useLayoutEffect', () => {
     const mountEffect = jest.fn(() => mountEffectCleanup)
 
     it('at this point only layout effects have been called', async () => {
-      hookRoot = HookRoot(() => {
+      hookRoot = runHook(() => {
         useLayoutEffect(eachRenderLayoutEffect)
         useLayoutEffect(mountLayoutEffect, [])
         useEffect(eachRenderEffect)
@@ -155,7 +155,7 @@ describe('useEffect + useLayoutEffect', () => {
       useEffect(() => effectCleanup)
     })
 
-    const hookRoot = HookRoot(useJestHook)
+    const hookRoot = runHook(useJestHook)
     await hookRoot.effects
     await hookRoot.destroy()
 
@@ -171,7 +171,7 @@ describe('useEffect + useLayoutEffect', () => {
       useEffect(() => effectCleanup)
     })
 
-    const hookRoot = HookRoot(useJestHook)
+    const hookRoot = runHook(useJestHook)
     await hookRoot.value
     await hookRoot.destroy()
 
@@ -188,7 +188,7 @@ describe('effects promise', () => {
       useEffect(effect)
       useLayoutEffect(layoutEffect)
     })
-    const hookRoot = HookRoot(useJestHook)
+    const hookRoot = runHook(useJestHook)
 
     expect(effect).toHaveBeenCalledTimes(0)
     expect(layoutEffect).toHaveBeenCalledTimes(1)
@@ -209,7 +209,7 @@ describe('effects promise', () => {
 
   it('should reject effects promise after destroy', async () => {
     const useJestHook = jest.fn(() => 'hook value')
-    const hookRoot = HookRoot(useJestHook)
+    const hookRoot = runHook(useJestHook)
 
     expect(await hookRoot.value).toBe('hook value')
     expect(useJestHook).toHaveBeenCalledTimes(1)

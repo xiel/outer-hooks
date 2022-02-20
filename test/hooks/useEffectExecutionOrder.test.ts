@@ -1,5 +1,5 @@
-import { HookRoot, useEffect, useLayoutEffect } from '../../src'
-import { Root } from '../../src/root/HookRootTypes'
+import { runHook, useEffect, useLayoutEffect } from '../../src'
+import { Root } from '../../src/root/runHookTypes'
 
 describe('effects - order of execution', () => {
   let log: string[] = []
@@ -8,7 +8,7 @@ describe('effects - order of execution', () => {
   let cleanUp = (l: string) => `${l} -> cleanup`
 
   it('should call them in order, but useLayoutEffects always first', async () => {
-    hookRoot = HookRoot(() => {
+    hookRoot = runHook(() => {
       renderId++
 
       useLayoutEffect(() => {

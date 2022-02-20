@@ -1,5 +1,5 @@
 import {
-  HookRoot,
+  runHook,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -7,8 +7,8 @@ import {
   useState,
 } from '../../src'
 
-describe('HookRoot Nesting', () => {
-  it('should be possible to nest HookRoots', async () => {
+describe('runHook Nesting', () => {
+  it('should be possible to nest runHooks', async () => {
     const cleanUp = (l: string) => `${l} -> cleanup`
     let log: string[] = []
 
@@ -57,8 +57,8 @@ describe('HookRoot Nesting', () => {
         someRef.current += ' I'
       })
 
-      // create a HookRoot in a HookRoot
-      const nestedHook = useMemo(() => HookRoot(useNestedHook), [])
+      // create a runHook in a runHook
+      const nestedHook = useMemo(() => runHook(useNestedHook), [])
       useLayoutEffect(() => nestedHook.destroy, [nestedHook])
 
       const anotherRef = useRef('not nested')
@@ -87,7 +87,7 @@ describe('HookRoot Nesting', () => {
       }
     }
 
-    const hookRoot = HookRoot(useHook)
+    const hookRoot = runHook(useHook)
     await hookRoot.effects
     const { nestedHook, ...value } = await hookRoot.value
 
@@ -137,11 +137,11 @@ describe('HookRoot Nesting', () => {
 
   it('should be able to call/render hook roots conditionally', async () => {
     const sideEffect = jest.fn()
-    const hookRoot = HookRoot(() => {
+    const hookRoot = runHook(() => {
       const [count, countSet] = useState(0)
 
       if (count === 0) {
-        HookRoot(() => {
+        runHook(() => {
           const [message] = useState(() => 'hello')
           useEffect(() => sideEffect(message))
         })

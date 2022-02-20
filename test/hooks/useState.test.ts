@@ -1,8 +1,8 @@
-import { HookRoot, useEffect, useState } from '../../src'
+import { runHook, useEffect, useState } from '../../src'
 
 describe('useState', () => {
   it('should return a tuple of current/initial state and update function', async () => {
-    const hookRoot = HookRoot(() => {
+    const hookRoot = runHook(() => {
       const [currentState, setState] = useState('initial value')
       return {
         currentState,
@@ -14,7 +14,7 @@ describe('useState', () => {
   })
 
   it('should accept a function as initializer', async () => {
-    const hookRoot = HookRoot(() => {
+    const hookRoot = runHook(() => {
       const [currentState, setState] = useState(() => 'initial value')
       return {
         currentState,
@@ -26,7 +26,7 @@ describe('useState', () => {
   })
 
   it('should re-render when update function is called', async () => {
-    const hookRoot = HookRoot(() => {
+    const hookRoot = runHook(() => {
       const [currentState, setState] = useState('initial value')
       return {
         currentState,
@@ -42,7 +42,7 @@ describe('useState', () => {
   })
 
   it('should call callback passed to update function with current value', async () => {
-    const hookRoot = HookRoot(() => {
+    const hookRoot = runHook(() => {
       const [currentState, setState] = useState(0)
       return {
         currentState,
@@ -59,7 +59,7 @@ describe('useState', () => {
 
   it('should not re-render when the same value is set', async () => {
     let renderId = -1
-    const hookRoot = HookRoot(() => {
+    const hookRoot = runHook(() => {
       renderId++
       const [currentState, setState] = useState(0)
       return {
@@ -78,7 +78,7 @@ describe('useState', () => {
   })
 
   it('should re-render when set state is called in effect', async () => {
-    const hookRoot = HookRoot(() => {
+    const hookRoot = runHook(() => {
       const [currentState, setState] = useState(0)
 
       useEffect(() => {
@@ -103,7 +103,7 @@ describe('useState', () => {
 
   it('should re-render (sync) when set state is called in render', async () => {
     let renderId = -1
-    const hookRoot = HookRoot(() => {
+    const hookRoot = runHook(() => {
       renderId++
       const [currentState, setState] = useState(0)
 

@@ -2,7 +2,7 @@
  * @jest-environment node
  */
 
-import { HookRoot, useEffect, useLayoutEffect } from '../../src'
+import { runHook, useEffect, useLayoutEffect } from '../../src'
 
 // TODO: add effectsDisabled false test for node
 
@@ -18,7 +18,7 @@ describe('useEffect / useLayoutEffect (in node environment with effects disabled
       return renderId
     }
     useHook.effectsDisabled = true
-    const hookRoot = HookRoot(useHook)
+    const hookRoot = runHook(useHook)
 
     await hookRoot.effects
     expect(eachRenderEffect).toHaveBeenCalledTimes(0)
@@ -41,7 +41,7 @@ describe('useEffect / useLayoutEffect (in node environment with effects disabled
       useLayoutEffect(eachRenderLayoutEffect)
     }
     useHook.effectsDisabled = true
-    const hookRoot = HookRoot(useHook)
+    const hookRoot = runHook(useHook)
 
     await hookRoot.effects
     await hookRoot.destroy()

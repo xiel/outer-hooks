@@ -1,4 +1,4 @@
-import { HookRoot, useMemo } from '../../src'
+import { runHook, useMemo } from '../../src'
 
 describe('useMemo', () => {
   it('should be called when deps change', async () => {
@@ -6,7 +6,7 @@ describe('useMemo', () => {
       aMemoProp: a.toString(),
     }))
 
-    const hookRoot = HookRoot(
+    const hookRoot = runHook(
       ({ a }) => {
         return useMemo(() => valueFactory(a), [a])
       },
@@ -36,7 +36,7 @@ describe('useMemo', () => {
   })
 
   it('must not mix up values', async () => {
-    const memTest1 = HookRoot(
+    const memTest1 = runHook(
       ({ out }) => {
         const mem1 = useMemo(() => 'a', [])
         const mem2 = useMemo(() => 'b', [])
@@ -46,7 +46,7 @@ describe('useMemo', () => {
       },
       { out: 'outputProp' }
     )
-    const memTest2 = HookRoot(
+    const memTest2 = runHook(
       ({ out }) => {
         const mem1 = useMemo(() => 'd', [])
         const mem2 = useMemo(() => 'e', [])

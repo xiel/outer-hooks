@@ -3,8 +3,8 @@ import * as ExportedInterface from '../src'
 test('exported interface', () => {
   expect(ExportedInterface).toMatchInlineSnapshot(`
     Object {
-      "HookRoot": [Function],
       "act": [Function],
+      "runHook": [Function],
       "useCallback": [Function],
       "useConnectHook": [Function],
       "useEffect": [Function],

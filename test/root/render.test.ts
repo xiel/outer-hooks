@@ -1,11 +1,11 @@
-import { act, HookRoot } from '../../src'
+import { act, runHook } from '../../src'
 
 const usePropReturningHook = <P>(props: P) => props
 
-describe('HookRoot | render & update', () => {
+describe('runHook | render & update', () => {
   describe('render', () => {
     it('should replace all props', () => {
-      const hookRoot = act(() => HookRoot(usePropReturningHook, { a: 1, b: 1 }))
+      const hookRoot = act(() => runHook(usePropReturningHook, { a: 1, b: 1 }))
       expect(hookRoot.currentValue).toEqual({ a: 1, b: 1 })
 
       act(() => hookRoot.render({ a: 0, b: 0 }))
@@ -20,7 +20,7 @@ describe('HookRoot | render & update', () => {
 
   describe('update', () => {
     it('should merge with previous props', () => {
-      const hookRoot = act(() => HookRoot(usePropReturningHook, { a: 1, b: 1 }))
+      const hookRoot = act(() => runHook(usePropReturningHook, { a: 1, b: 1 }))
       expect(hookRoot.currentValue).toEqual({ a: 1, b: 1 })
 
       act(() => hookRoot.update({ a: 0, b: 0 }))
@@ -35,7 +35,7 @@ describe('HookRoot | render & update', () => {
     })
 
     it('can be called empty', () => {
-      const hookRoot = act(() => HookRoot(usePropReturningHook, { a: 1, b: 1 }))
+      const hookRoot = act(() => runHook(usePropReturningHook, { a: 1, b: 1 }))
       expect(hookRoot.currentValue).toEqual({ a: 1, b: 1 })
       act(() => hookRoot.update())
       expect(hookRoot.currentValue).toEqual({ a: 1, b: 1 })

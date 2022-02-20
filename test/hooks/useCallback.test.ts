@@ -1,8 +1,8 @@
-import { HookRoot, useCallback } from '../../src'
+import { runHook, useCallback } from '../../src'
 
 describe('useCallback', () => {
   it('should return same callback when deps are empty', async () => {
-    const hookRoot = HookRoot(() => {
+    const hookRoot = runHook(() => {
       return useCallback(() => {}, [])
     })
 
@@ -16,7 +16,7 @@ describe('useCallback', () => {
   })
 
   it('should return new callback when deps change', async () => {
-    const hookRoot = HookRoot(
+    const hookRoot = runHook(
       ({ dep }) => {
         return useCallback(() => dep, [dep])
       },

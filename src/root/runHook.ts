@@ -9,7 +9,7 @@ import {
   Root,
   Subscription,
   SubscriptionTypes as _SubscriptionTypes,
-} from './HookRootTypes'
+} from './runHookTypes'
 
 type HookFnOptions = {
   effectsDisabled?: boolean
@@ -18,16 +18,16 @@ type HookFnOptions = {
 type HookFunction<Props, HookValue> = ((props: Props) => HookValue) &
   HookFnOptions
 
-export function HookRoot<Props extends {} | undefined, HookValue>(
+export function runHook<Props extends {} | undefined, HookValue>(
   hookFunction: HookFunction<Props, HookValue>,
   initialProps: Props
 ): Root<Props, HookValue>
 
-export function HookRoot<Props extends {} | undefined, HookValue>(
+export function runHook<Props extends {} | undefined, HookValue>(
   hookFunction: ((props?: Props) => HookValue) & HookFnOptions
 ): Root<Props, HookValue>
 
-export function HookRoot<Props extends {}, HookValue>(
+export function runHook<Props extends {}, HookValue>(
   hookFunction: HookFunction<Props, HookValue>,
   initialProps?: Props
 ): Root<Props, HookValue> {
@@ -51,7 +51,7 @@ export function HookRoot<Props extends {}, HookValue>(
 
   const hookName = hookFunction.name || 'useAnonymousHook'
   const hookRoot: Root<Props, HookValue> = Object.freeze({
-    displayName: `HookRoot(${hookName})`,
+    displayName: `runHook(${hookName})`,
     get isSuspended() {
       return isSuspended
     },

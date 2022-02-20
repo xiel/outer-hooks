@@ -48,5 +48,5 @@ function useCustomHook() {
 }
 
 // Run the hook
-const custom = HookRoot(useCustomHook)
+const custom = runHook(useCustomHook)
 ```

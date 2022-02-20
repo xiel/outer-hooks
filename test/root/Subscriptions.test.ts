@@ -1,4 +1,4 @@
-import { HookRoot, Root } from '../../src'
+import { Root, runHook } from '../../src'
 import { silenceNextConsoleError } from '../utils/testHelpers'
 
 describe('Subscriptions', () => {
@@ -16,7 +16,7 @@ describe('Subscriptions', () => {
   describe('on/off("update")', () => {
     it('should call on("update") func after render (no props)', async () => {
       let renderId = 0
-      const hookRoot = HookRoot(() => `value: ${renderId++}`)
+      const hookRoot = runHook(() => `value: ${renderId++}`)
       const { onDestroyFn, onUpdateFn } = prepareHookRoot(hookRoot)
       expect(await hookRoot.value).toEqual('value: 0')
       expect(onUpdateFn).toHaveBeenCalledTimes(1)
@@ -29,7 +29,7 @@ describe('Subscriptions', () => {
 
     it('should call on("update") func after render (empty props)', async () => {
       let renderId = 0
-      const hookRoot = HookRoot(() => `value: ${renderId++}`, {})
+      const hookRoot = runHook(() => `value: ${renderId++}`, {})
       const { onDestroyFn, onUpdateFn } = prepareHookRoot(hookRoot)
       await hookRoot.value
       expect(onUpdateFn).toHaveBeenCalledTimes(1)
@@ -44,7 +44,7 @@ describe('Subscriptions', () => {
   describe('on/off("destroy")', () => {
     it('should call on("destroy") func when hook throws sync in first render', async () => {
       silenceNextConsoleError()
-      const hookRoot = HookRoot(function useThrowSync() {
+      const hookRoot = runHook(function useThrowSync() {
         throw Error('throw sync')
       })
       const catchFn = jest.fn()
@@ -57,7 +57,7 @@ describe('Subscriptions', () => {
 
     it('should call on("destroy") func when hook throws after update', async () => {
       silenceNextConsoleError()
-      const hookRoot = HookRoot((shouldThrow = false) => {
+      const hookRoot = runHook((shouldThrow = false) => {
         if (shouldThrow) {
           throw Error('some error')
         }
@@ -78,7 +78,7 @@ describe('Subscriptions', () => {
 
     it('should NOT call on("destroy") func when unsubscribed using off', async () => {
       silenceNextConsoleError()
-      const hookRoot = HookRoot((shouldThrow = false) => {
+      const hookRoot = runHook((shouldThrow = false) => {
         if (shouldThrow) {
           throw Error('some error')
         }

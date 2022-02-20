@@ -1,8 +1,8 @@
-import { HookRoot, useRef } from '../../src'
+import { runHook, useRef } from '../../src'
 
 describe('useRef', () => {
   it('should always return same ref object', async () => {
-    const hookRoot = HookRoot(() => {
+    const hookRoot = runHook(() => {
       return useRef('initial value')
     })
 
@@ -17,7 +17,7 @@ describe('useRef', () => {
   })
 
   it('should allow modifications of the ref objects current property', async () => {
-    const hookRoot = HookRoot(() => {
+    const hookRoot = runHook(() => {
       return useRef('initial value')
     })
 
