@@ -12,8 +12,8 @@ If you know and love [hooks from React](https://reactjs.org/docs/hooks-intro.htm
 ### Differences to React
 
 - OuterHooks is plain JavaScript/TypeScript
-- No JSX here – does not render to the DOM
-- Only meant to compose logic using native & custom hooks
+- No JSX here – does not render to the DOM or any UI really
+- Only compose logic using native & custom hooks
 - Life cycle hooks like useEffect also run in Node
 
 ## Install
