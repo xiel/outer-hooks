@@ -19,7 +19,7 @@ If you know and love [hooks from React](https://reactjs.org/docs/hooks-intro.htm
 ## Install
 
 ```
-yarn add @xiel/outer-hooks
+yarn add @xiel/outer-hooks@beta
 ```
 
 #### Warning: Work in progress 🚧
@@ -33,7 +33,6 @@ This library is still in **beta**. It works, is well tested and actively being d
 - useState, useRef, useMemo, useCallback, useReducer, useEffect, useLayoutEffect, ...
 
 For now please check the React [Hooks API reference](https://reactjs.org/docs/hooks-reference.html) as they work exactly the same in OuterHooks.
-
 
 ### Custom Hooks
 
