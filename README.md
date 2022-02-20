@@ -1,7 +1,7 @@
 
 
 # OuterHooks 💫
-[![npm (tag)](https://img.shields.io/npm/v/@xiel/outer-hooks/latest.svg)](https://www.npmjs.com/package/@xiel/outer-hooks)
+[![npm (tag)](https://img.shields.io/npm/v/@xiel/outer-hooks?color=blue)](https://www.npmjs.com/package/@xiel/outer-hooks)
 ![GitHub top language](https://img.shields.io/github/languages/top/xiel/outer-hooks.svg)
 
 
