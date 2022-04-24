@@ -19,10 +19,10 @@ If you know and love [hooks from React](https://reactjs.org/docs/hooks-intro.htm
 ## Install
 
 ```
-yarn add @xiel/outer-hooks@beta
+yarn add @xiel/outer-hooks
 ```
 
-#### Warning: Work in progress 🚧
+#### Warning: Work in progress
 
 This library is still in **beta**. It works, is well tested and actively being developed. But the API is not 100% stable yet.
 
