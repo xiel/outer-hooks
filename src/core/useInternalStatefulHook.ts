@@ -27,19 +27,18 @@ export function useInternalStatefulHook<Type extends keyof HookState>(
     throw new Error('please wrap your outer hook in a runHook')
   }
   const { currentHook, currentIndex } = outerHookState
-  const currentHookStates = HookStates.get(outerHookState.currentHook) || []
+  const states = HookStates.get(outerHookState.currentHook) || []
 
-  if (
-    currentHookStates[currentIndex] === undefined ||
-    !(type in currentHookStates[currentIndex])
-  ) {
-    currentHookStates[currentIndex] = currentHookStates[currentIndex] || {}
-    currentHookStates[currentIndex][type] = initFn(currentHook, currentIndex)
-    HookStates.set(outerHookState.currentHook, currentHookStates)
+  let state = states[currentIndex]
+
+  if (state === undefined || !(type in state)) {
+    states[currentIndex] = state = state || {}
+    state[type] = initFn(currentHook, currentIndex)
+    HookStates.set(outerHookState.currentHook, states)
   }
 
   try {
-    return currentHookStates[currentIndex][type]!
+    return states[currentIndex][type]!
   } finally {
     outerHookState.currentIndex++
   }

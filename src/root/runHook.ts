@@ -232,13 +232,12 @@ export function runHook<Props extends {}, HookValue>(
     }
 
     const { currentHook: prevHook, currentIndex: prevIndex } = outerHookState
-
     outerHookState.currentHook = hook as ActiveHook
     outerHookState.currentIndex = 0
 
-    const thisRenderID = (renderId += 1)
+    const currentRenderId = (renderId += 1)
     const renderProps = nextProps ?? latestRenderProps
-    let hadError = false
+    let isDestroyedOrSuspended = false
 
     try {
       needsRender = false
@@ -253,14 +252,15 @@ export function runHook<Props extends {}, HookValue>(
       hook.afterRenderEffects.forEach(callEffect)
       hook.afterRenderEffects.clear()
     } catch (caughtError) {
-      hadError = true
+      isDestroyedOrSuspended = true
 
+      // Suspend the hook, so that it can be resumed once the promise is resolved.
       if (isPromiseLike(caughtError)) {
         needsRender = true
         isSuspended = true
 
         caughtError.then(
-          () => renderId === thisRenderID && performRender(nextProps),
+          () => renderId === currentRenderId && performRender(nextProps),
           destroy
         )
       } else {
@@ -268,10 +268,11 @@ export function runHook<Props extends {}, HookValue>(
       }
     }
 
+    // Setting back to previous values (instead of resetting to undefined) to allow for nesting of runHook calls.
     outerHookState.currentHook = prevHook
     outerHookState.currentIndex = prevIndex
 
-    if (hadError) {
+    if (isDestroyedOrSuspended) {
       return hookRoot
     }
 

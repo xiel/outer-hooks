@@ -100,13 +100,13 @@ function initEffectState(isLayout: boolean) {
     currentIndex
   ) => {
     // TODO: put effects onto activeHook directly
-    const hooksEffects =
-      ActiveHookEffectsMap.get(activeHook) ||
-      (() => {
-        const hooksEffectsCreated = createActiveHookEffectRunner()
-        ActiveHookEffectsMap.set(activeHook, hooksEffectsCreated)
-        return hooksEffectsCreated
-      })()
+    let hooksEffects = ActiveHookEffectsMap.get(activeHook)
+
+    if (!hooksEffects) {
+      const hooksEffectsCreated = createActiveHookEffectRunner()
+      ActiveHookEffectsMap.set(activeHook, hooksEffectsCreated)
+      hooksEffects = hooksEffectsCreated
+    }
 
     const renderEffects = new Set<Effect>()
     const destroyEffects = new Set<Effect>()
@@ -150,11 +150,20 @@ function useInternalEffect(
     cleanupFn,
   ] = useInternalStatefulHook('effect', initEffectState(isLayout))!
 
+  // Remove effects pending effects. They were not run because the hook suspended during render.
+  if (renderEffects.size) {
+    renderEffects.clear()
+  }
+
   if (
     activeHook.effectsEnabled &&
     depsRequireUpdate(deps, lastDeps.ref.current)
   ) {
-    const renderEffect = () => {
+    renderEffects.add(() => {
+      if (activeHook.hookRoot.isSuspended) {
+        throw Error('Cannot run effect while suspended.')
+      }
+
       lastDeps.ref.current = deps
 
       if (isLayout) {
@@ -190,8 +199,7 @@ function useInternalEffect(
           destroyEffects.add(cleanUp)
         }
       }
-    }
-    renderEffects.add(renderEffect)
+    })
   }
 
   if (activeHook.effectsEnabled) {
